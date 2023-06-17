@@ -1,5 +1,6 @@
 #include "list.h"
 #include <stdlib.h>
+#include <ctype.h>
 #include <string.h>
 #include "util.h"
 
@@ -68,6 +69,7 @@ char * list_to_string(char_list l) {
 
 char_list clear_list(char_list l) {
     l->length = 0;
+    return l;
 }
 Bool is_empty(char_list l) {
     return (Bool)(l->length == 0);
