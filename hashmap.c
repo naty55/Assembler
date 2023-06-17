@@ -37,6 +37,22 @@ char_list get_from_string_clist_table(string_clist_table table, char *key) {
     return NULL;
 }
 
+void free_clist_table(string_clist_table table) {
+    int i=0;
+    for (;i < TABLE_SIZE; i++) {
+        node * next;
+        node * ptr = table->data[i];
+        while (ptr != NULL) {
+            next = ptr->next;
+            free(ptr->data);
+            free(ptr->key);
+            free(ptr);
+            ptr = next;
+            }
+        }
+    free(table);
+}
+
 unsigned int hashFunction(const char* key) {
     int i;
     unsigned int hash = 0;
