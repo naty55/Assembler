@@ -31,8 +31,9 @@ int remove_macros(FILE *input_file, FILE* source_file) {
                 macro_content = create_char_list();
                 add_to_string_clist_table(macrosTable, list_to_string(macro_name), macro_content);
             } else {
+                char *macro_name_array;
                 read_string(macro_name, ptr_in_line);
-                char *macro_name_array = list_to_string(macro_name);
+                macro_name_array = list_to_string(macro_name);
                 macro_content = get_from_string_clist_table(macrosTable, macro_name_array);
                 if(macro_content != NULL) {
                     char *content_array = list_to_string(macro_content);
@@ -47,5 +48,7 @@ int remove_macros(FILE *input_file, FILE* source_file) {
         }
     }
     printf("\n");
+    free_clist_table(macrosTable);
+    free_list(macro_name);
     return 0;
 }
