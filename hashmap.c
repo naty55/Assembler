@@ -27,8 +27,12 @@ string_clist_table add_to_string_clist_table(string_clist_table table, char *key
 }
 char_list get_from_string_clist_table(string_clist_table table, char *key) {
     unsigned int hash = hashFunction(key);
-    if((table->data)[hash] != NULL) {
-        return (table->data)[hash]->data;
+    node * ptr = table->data[hash];
+    while (ptr != NULL) {
+        if(strcmp(ptr->key, key) == 0) {
+            return ptr->data;
+        }
+        ptr = ptr->next;
     }
     return NULL;
 }
