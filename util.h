@@ -7,5 +7,5 @@ typedef enum {
 
 char * skip_spaces(char * str);
 Bool is_str_empty(char * str);
-
+void printBinary(unsigned short value);
 #endif

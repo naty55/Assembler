@@ -9,3 +9,4 @@ void set_register_source_operand(i_line i);
 void set_register_target_operand(i_line i);
 void set_label_operand(i_line i);
 void set_operation(i_line i, operation op);
+void print_i_line(i_line i);
