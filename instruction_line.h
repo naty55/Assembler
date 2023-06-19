@@ -1,9 +1,11 @@
 #include "constants.h"
 typedef struct InstructionLine *i_line; 
 
-void set_source_operand_type(i_line i);
-void set_target_operand_type(i_line i);
+i_line create_iline();
+void set_source_address_type(i_line i, address_type a_type);
+void set_target_address_type(i_line i, address_type a_type);
 void set_encoding(i_line i, encoding e);
-void set_source_operand(i_line i);
-void set_target_operand(i_line i);
-void set_operation(i_line i);
+void set_register_source_operand(i_line i);
+void set_register_target_operand(i_line i);
+void set_label_operand(i_line i);
+void set_operation(i_line i, operation op);
