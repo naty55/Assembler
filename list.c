@@ -10,15 +10,15 @@ struct CharList {
     unsigned long size;
 };
 
-char_list create_char_list() {
-    char_list list = malloc(sizeof(struct CharList));
+clist create_char_list() {
+    clist list = malloc(sizeof(struct CharList));
     list->data= malloc(1);
     list->size = 1; 
     list->length = 0;
     return list;
 }
 
-char append_char(char_list l, char c) {
+char append_char(clist l, char c) {
     if (l->size == l->length) /* We are out of place*/
     {
         l->data = realloc(l->data, 2 * l->size * sizeof(char));
@@ -27,7 +27,7 @@ char append_char(char_list l, char c) {
     l->data[l->length++] = c;
     return c;
 }
-char append_n_chars(char_list l, char *items, int size) {
+char append_n_chars(clist l, char *items, int size) {
     int i;
     for (i = 0; i < size; i++) {
         append_char(l, items[i]);
@@ -35,7 +35,7 @@ char append_n_chars(char_list l, char *items, int size) {
     return items[i];
 }
 
-char append_chars(char_list l, char *items) {
+char append_chars(clist l, char *items) {
     int i;
     for (i = 0; items[i] != 0; i++) {
         append_char(l, items[i]);
@@ -43,7 +43,7 @@ char append_chars(char_list l, char *items) {
     return items[i];
 }
 
-char read_string(char_list l, char * str) {
+char read_string(clist l, char * str) {
     str = skip_spaces(str);
     while(!isspace(*str) && *str != '\n' && *str != '\0') {
         append_char(l, *str);
@@ -52,30 +52,30 @@ char read_string(char_list l, char * str) {
     return *(str - 1);
 }
 
-char get_char_from_list(char_list l, int i) {
+char get_char_from_list(clist l, int i) {
     return (l->data)[i];
 }
 
-unsigned long get_length(char_list l) {
+unsigned long get_length(clist l) {
     return l->length;
 }
 
-char * list_to_string(char_list l) {
+char * list_to_string(clist l) {
     char * str = malloc((l->length + 1) * sizeof(char));
     strncpy(str, l->data, l->length);
     str[l->length] = '\0';
     return str;
 }
 
-char_list clear_list(char_list l) {
+clist clear_list(clist l) {
     l->length = 0;
     return l;
 }
-Bool is_empty(char_list l) {
+Bool is_empty(clist l) {
     return (Bool)(l->length == 0);
 }
 
-void free_list(char_list l) {
+void free_clist(clist l) {
     free(l->data);
     free(l);
 }

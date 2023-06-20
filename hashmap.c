@@ -16,7 +16,7 @@ string_clist_table create_string_clist_table() {
     string_clist_table table = malloc(sizeof(struct StringCharListTable));
     return table;
 }
-string_clist_table add_to_string_clist_table(string_clist_table table, char *key, char_list list) {
+string_clist_table add_to_string_clist_table(string_clist_table table, char *key, clist list) {
     unsigned int hash = hashFunction(key);
     node * newNode = malloc(sizeof(node));
     newNode->data = list;
@@ -25,7 +25,7 @@ string_clist_table add_to_string_clist_table(string_clist_table table, char *key
     table->data[hash] = newNode;
     return table;
 }
-char_list get_from_string_clist_table(string_clist_table table, char *key) {
+clist get_from_string_clist_table(string_clist_table table, char *key) {
     unsigned int hash = hashFunction(key);
     node * ptr = table->data[hash];
     while (ptr != NULL) {

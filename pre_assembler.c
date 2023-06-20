@@ -11,15 +11,15 @@ int remove_macros(FILE *input_file, FILE* source_file) {
     char line[MAX_LINE_SIZE];
     char *ptr_in_line;
     int i = 0;
-    char_list macro_name = create_char_list();
-    char_list macro_content;
+    clist macro_name = create_char_list();
+    clist macro_content;
     string_clist_table macrosTable = create_string_clist_table();
     while(fgets(line, MAX_LINE_SIZE, input_file) != NULL) {
         printf("%d\t: %s", i++, line);
-        if(!is_empty(macro_name)) {
+        if(!is_clist_empty(macro_name)) {
             ptr_in_line = skip_spaces(line);
             if(strncmp(ENDMACRO, ptr_in_line, 7) == 0) {
-                clear_list(macro_name);
+                clear_clist(macro_name);
             } else {
                 append_chars(macro_content, line);
             }
@@ -42,13 +42,13 @@ int remove_macros(FILE *input_file, FILE* source_file) {
                 } else {
                     fputs(line, source_file);
                 }
-                clear_list(macro_name);
+                clear_clist(macro_name);
                 free(macro_name_array);
             }
         }
     }
     printf("\n");
     free_clist_table(macrosTable);
-    free_list(macro_name);
+    free_clist(macro_name);
     return 0;
 }
