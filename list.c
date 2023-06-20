@@ -10,7 +10,7 @@ struct CharList {
     unsigned long size;
 };
 
-clist create_char_list() {
+clist create_clist() {
     clist list = malloc(sizeof(struct CharList));
     list->data= malloc(1);
     list->size = 1; 
@@ -67,15 +67,58 @@ char * list_to_string(clist l) {
     return str;
 }
 
-clist clear_list(clist l) {
+clist clear_clist(clist l) {
     l->length = 0;
     return l;
 }
-Bool is_empty(clist l) {
+Bool is_clist_empty(clist l) {
     return (Bool)(l->length == 0);
 }
 
 void free_clist(clist l) {
     free(l->data);
+    free(l);
+}
+
+struct PointerList {
+    void **data;
+    unsigned long length;
+    unsigned long size;
+};
+plist create_plist() {
+    plist list = malloc(sizeof(struct PointerList));
+    list->data= malloc(sizeof(void *));
+    list->size = 1; 
+    list->length = 0;
+    return list;
+}
+void* append_pointer(plist l, void* item) {
+     if (l->size == l->length) /* We are out of place*/
+    {
+        l->data = realloc(l->data, 2 * l->size * sizeof(void *));
+        l->size = 2 * l->size;
+    }
+    l->data[l->length++] = item;
+    return item;
+}
+void* get_pointer_from_list(plist l, int i) {
+    return l->data[i];
+}
+unsigned long get_plist_length(plist l) {
+    return l->length;
+}
+plist clear_plist(plist l) {
+    int i;
+    for (i = 0; i < l->length; i++) {
+        free(l->data[i]);
+    }
+    l->length=0;
+    return l;
+}
+Bool is_plist_empty(plist l) {
+    return (Bool)(l->length == 0);
+}
+void free_plist(plist l) {
+    clear_plist(l);
     free(l);
 }
