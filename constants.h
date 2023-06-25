@@ -47,4 +47,7 @@ typedef enum {
     R7 = 7
 } register_name;
 
+
+short get_params_to_read(operation op);
+
 #endif
