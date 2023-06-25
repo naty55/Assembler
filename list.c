@@ -101,6 +101,14 @@ void* append_pointer(plist l, void* item) {
     l->data[l->length++] = item;
     return item;
 }
+
+void* append_pointer_if_not_null(plist l, void* item) {
+    if(item != NULL) {
+        return append_pointer(l, item);
+    }
+    return item;
+}
+
 void* get_pointer_from_list(plist l, int i) {
     return l->data[i];
 }
