@@ -2,9 +2,10 @@ MAIN_FLAG = gcc -g -Wall -ansi -pedantic
 
 OBJ_FLAG = gcc -c -Wall -ansi -pedantic
 
-OBJECTS = main.o assembler.o pre_assembler.o util.o constants.o list.o hashmap.o instruction_line.o #data_structure.o first_pass.o second_pass.o parse.o errors.o output.o
+OBJECTS = main.o assembler.o pre_assembler.o util.o constants.o list.o hashmap.o instruction_line.o parse.o #data_structure.o  errors.o output.o
 
-HEADERS = assembler.h pre_assembler.h util.h constants.h list.h hashmap.h instruction_line.h #data_structure.h first_pass.h second_pass.h parse.h errors.h output.h
+HEADERS = assembler.h pre_assembler.h util.h constants.h list.h hashmap.h instruction_line.h error.h parse.h #data_structure.h first_pass.h second_pass.h parse.h errors.h output.h
+
 
 assembler: $(OBJECTS)
 	$(MAIN_FLAG) $(OBJECTS) -o assembler
@@ -31,14 +32,8 @@ pre_assembler.o: pre_assembler.c $(HEADERS)
 instruction_line.o: instruction_line.c $(HEADERS)
 	$(OBJ_FLAG) instruction_line.c -o instruction_line.o
 
-#first_pass.o: first_pass.c $(HEADERS)
-#	$(OBJ_FLAG) first_pass.c -o first_pass.o
-
-#second_pass.o: second_pass.c $(HEADERS)
-#	$(OBJ_FLAG) second_pass.c -o second_pass.o
-
-#parse.o: parse.c $(HEADERS)
-#	$(OBJ_FLAG) parse.c -o parse.o
+parse.o: parse.c $(HEADERS)
+	$(OBJ_FLAG) parse.c -o parse.o
 
 #errors.o: errors.c $(HEADERS)
 #	$(OBJ_FLAG) errors.c -o errors.o
