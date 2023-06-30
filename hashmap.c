@@ -5,18 +5,18 @@
 
 typedef struct Node {
     void * data;
-    char *key;
+    char * key;
     struct Node * next;
 } node;
 
 struct StringCharListTable {
     node * data[TABLE_SIZE];
 };
-string_clist_table create_string_clist_table() {
+string_clist_table create_clist_table() {
     string_clist_table table = malloc(sizeof(struct StringCharListTable));
     return table;
 }
-string_clist_table add_to_string_clist_table(string_clist_table table, char *key, clist list) {
+string_clist_table add_to_clist_table(string_clist_table table, char *key, clist list) {
     unsigned int hash = hashFunction(key);
     node * newNode = malloc(sizeof(node));
     newNode->data = list;
@@ -25,7 +25,7 @@ string_clist_table add_to_string_clist_table(string_clist_table table, char *key
     table->data[hash] = newNode;
     return table;
 }
-clist get_from_string_clist_table(string_clist_table table, char *key) {
+clist get_from_clist_table(string_clist_table table, char *key) {
     unsigned int hash = hashFunction(key);
     node * ptr = table->data[hash];
     while (ptr != NULL) {
@@ -60,4 +60,56 @@ unsigned int hashFunction(const char* key) {
         hash = hash * 31 + key[i];
     }
     return hash % TABLE_SIZE;
+}
+
+
+
+
+typedef struct IntNode {
+    int data;
+    char * key;
+    struct IntNode * next;
+} int_node;
+
+struct StringIntegerTable {
+    int_node * data[TABLE_SIZE];
+};
+int_table create_int_table() {
+    int_table table = malloc(sizeof(struct StringIntegerTable));
+    return table;
+}
+int_table add_to_int_table(int_table table, char *key, int data) {
+    unsigned int hash = hashFunction(key);
+    int_node * newNode = malloc(sizeof(int_node));
+    newNode->data = data;
+    newNode->key = key;
+    newNode->next = table->data[hash];
+    table->data[hash] = newNode;
+    return table;
+}
+int get_from_int_table(int_table table, char *key) {
+    unsigned int hash = hashFunction(key);
+    int_node * ptr = table->data[hash];
+    while (ptr != NULL) {
+        if(strcmp(ptr->key, key) == 0) {
+            return ptr->data;
+        }
+        ptr = ptr->next;
+    }
+    return -1;
+}
+
+void free_int_table(int_table table) {
+    int i=0;
+    for (;i < TABLE_SIZE; i++) {
+        int_node * next;
+        int_node * ptr = table->data[i];
+        while (ptr != NULL) {
+            next = ptr->next;
+            free(ptr->key);
+            free(ptr);
+            ptr = next;
+            }
+        }
+    free(table);
 }
