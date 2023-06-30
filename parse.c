@@ -2,6 +2,9 @@
 #include "error.h"
 #include "util.h"
 #include "list.h"
+#include "hashmap.h"
+#include "error.h"
+#include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
 
@@ -57,7 +60,7 @@ char * read_operation(char * ptr_in_line, operation * op, int line_index) {
     return ptr_in_line;
 }
 
-char * read_label(char *ptr_in_line ,int line_index) {
+char * read_label(char *ptr_in_line ,int line_index, int_table symbols_table, int image_index) {
     char * label;
     ptr_in_line = skip_spaces(ptr_in_line);
     label = ptr_in_line;
@@ -70,7 +73,9 @@ char * read_label(char *ptr_in_line ,int line_index) {
         else {
             *ptr_in_line = 0;
             ptr_in_line = skip_spaces(ptr_in_line + 1);
+            add_to_int_table(symbols_table, label, 100 + image_index);
             printf("Found Label : %s\n", label);
+            printf("Label location: %d\n", get_from_int_table(symbols_table, label));
         }
     } else {
         ptr_in_line = label;
@@ -101,4 +106,35 @@ void check_for_extra_text(char *ptr_in_line, int line_index) {
             return;
         }
     }
+}
+
+address_type validate_param(clist param, int line_index, int_table symbols_table) {
+    if(get_char_from_list(param, 0) == '@') {
+        unsigned short reg = get_char_from_list(param, 2) - '0';
+        if (reg < 0 || 7 < reg || get_length(param) > 3 || get_char_from_list(param, 1) != 'r') {
+            PRINT_ERROR_WITH_INDEX("unknown register", line_index);
+            return IMM_REG_ADDR;
+        }
+        return IMM_REG_ADDR;
+    }
+    char * param_str = list_to_string(param);
+    if(is_string_number(param_str)) {
+        return ABS_ADDR;
+    }
+    if(is_param_label(param)) {
+        return IMM_ADDR;
+    }
+    PRINT_ERROR_WITH_INDEX("unknown parameter type", line_index);
+    free(param_str);
+    return ABS_ADDR;
+}
+
+Bool is_param_label(clist param) {
+    if(get_length(param) >= 32) {
+        return False;
+    }
+    if(isalpha(get_char_from_list(param, 0))) {
+        return True;
+    }
+    return False;
 }
