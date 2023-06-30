@@ -53,6 +53,14 @@ void set_operation(i_line i, operation op) {
 }
 
 void print_i_line(i_line i) {
+    if(i == NULL) {
+        printf("NULL\n");
+        return;
+    }
     printBinary(i->data);
+    convertToBase64(i->data);
+}
+
+void print_iline_in_base64(i_line i) {
     convertToBase64(i->data);
 }

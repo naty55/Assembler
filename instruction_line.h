@@ -11,3 +11,4 @@ void set_label_address(i_line i, unsigned short label_address);
 void set_operation(i_line i, operation op);
 void set_data(i_line i, char data);
 void print_i_line(i_line i);
+void print_iline_in_base64(i_line i);
