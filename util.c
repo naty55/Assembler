@@ -29,3 +29,33 @@ void printBinary(unsigned short value) {
     }
     printf("\n");
 }
+
+Bool is_string_number(char *str) {
+    int i = 0;
+    while (isspace(str[i])) {
+        i++;
+    }
+
+    if (str[i] == '-' || str[i] == '+') {
+        i++;
+    }
+    Bool hasDigits = False;
+    while (str[i] >= '0' && str[i] <= '9') {
+        hasDigits = True;
+        i++;
+    }
+    if (str[i] == '.') {
+        i++;
+        while (str[i] >= '0' && str[i] <= '9') {
+            hasDigits = True;
+            i++;
+        }
+    }
+    while (isspace(str[i])) {
+        i++;
+    }
+    if(str[i] == '\0' && hasDigits) {
+        return True;
+    }
+    return False;
+}

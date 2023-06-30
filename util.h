@@ -8,4 +8,5 @@ typedef enum {
 char * skip_spaces(char * str);
 Bool is_str_empty(char * str);
 void printBinary(unsigned short value);
+Bool is_string_number(char *str);
 #endif
