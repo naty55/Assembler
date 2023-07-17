@@ -10,10 +10,9 @@
 int remove_macros(FILE *input_file, FILE* source_file) {
     char line[MAX_LINE_SIZE];
     char *ptr_in_line;
-    int i = 0;
     clist macro_name = create_clist();
     clist macro_content;
-    string_clist_table macrosTable = create_clist_table();
+    clist_table macrosTable = create_clist_table();
     while(fgets(line, MAX_LINE_SIZE, input_file) != NULL) {
         /*printf("%d\t: %s", i++, line);*/
         if(!is_clist_empty(macro_name)) {
