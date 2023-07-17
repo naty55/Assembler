@@ -60,7 +60,7 @@ char * read_operation(char * ptr_in_line, operation * op, int line_index) {
     return ptr_in_line;
 }
 
-char * read_label(char *ptr_in_line ,int line_index, int_table symbols_table, int image_index) {
+char * read_label(char *ptr_in_line ,int line_index, symbol_table symbols_table, int image_index) {
     char * label;
     ptr_in_line = skip_spaces(ptr_in_line);
     label = ptr_in_line;
@@ -108,7 +108,8 @@ void check_for_extra_text(char *ptr_in_line, int line_index) {
     }
 }
 
-address_type validate_param(clist param, int line_index, int_table symbols_table) {
+address_type validate_param(clist param, int line_index, symbol_table symbols_table) {
+    char * param_str;
     if(get_char_from_list(param, 0) == '@') {
         unsigned short reg = get_char_from_list(param, 2) - '0';
         if (reg < 0 || 7 < reg || get_length(param) > 3 || get_char_from_list(param, 1) != 'r') {
@@ -117,7 +118,7 @@ address_type validate_param(clist param, int line_index, int_table symbols_table
         }
         return IMM_REG_ADDR;
     }
-    char * param_str = list_to_string(param);
+     param_str = list_to_string(param);
     if(is_string_number(param_str)) {
         return ABS_ADDR;
     }
