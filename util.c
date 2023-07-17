@@ -1,6 +1,8 @@
 #include <ctype.h>
 #include <stdio.h>
 #include "util.h"
+#include <stdlib.h>
+#include <string.h>
 
 
 
@@ -32,6 +34,7 @@ void printBinary(unsigned short value) {
 
 Bool is_string_number(char *str) {
     int i = 0;
+    Bool hasDigits;
     while (isspace(str[i])) {
         i++;
     }
@@ -39,7 +42,7 @@ Bool is_string_number(char *str) {
     if (str[i] == '-' || str[i] == '+') {
         i++;
     }
-    Bool hasDigits = False;
+    hasDigits = False;
     while (str[i] >= '0' && str[i] <= '9') {
         hasDigits = True;
         i++;
@@ -58,4 +61,21 @@ Bool is_string_number(char *str) {
         return True;
     }
     return False;
+}
+
+char * duplicate_string(char * str){
+    
+    size_t length = strlen(str);
+    char* duplicate = (char*)malloc((length + 1) * sizeof(char));
+    strcpy(duplicate, str);
+    return duplicate;
+}
+
+
+void set_all_null(void ** data, int size) {
+    int i = 0;
+    for (; i < size; i++) {
+        *data = NULL;
+        data++;
+    }
 }
