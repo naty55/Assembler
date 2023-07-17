@@ -2,6 +2,8 @@
 #include "hashmap.h"
 #include "string.h"
 #include <stdlib.h>
+#include <stdio.h>
+#include "util.h"
 
 typedef struct Node {
     void * data;
@@ -12,11 +14,12 @@ typedef struct Node {
 struct StringCharListTable {
     node * data[TABLE_SIZE];
 };
-string_clist_table create_clist_table() {
-    string_clist_table table = malloc(sizeof(struct StringCharListTable));
+clist_table create_clist_table() {
+    clist_table table = malloc(sizeof(struct StringCharListTable));
+    set_all_null((void**)table->data, TABLE_SIZE);
     return table;
 }
-string_clist_table add_to_clist_table(string_clist_table table, char *key, clist list) {
+clist_table add_to_clist_table(clist_table table, char *key, clist list) {
     unsigned int hash = hashFunction(key);
     node * newNode = malloc(sizeof(node));
     newNode->data = list;
@@ -25,7 +28,7 @@ string_clist_table add_to_clist_table(string_clist_table table, char *key, clist
     table->data[hash] = newNode;
     return table;
 }
-clist get_from_clist_table(string_clist_table table, char *key) {
+clist get_from_clist_table(clist_table table, char *key) {
     unsigned int hash = hashFunction(key);
     node * ptr = table->data[hash];
     while (ptr != NULL) {
@@ -37,7 +40,7 @@ clist get_from_clist_table(string_clist_table table, char *key) {
     return NULL;
 }
 
-void free_clist_table(string_clist_table table) {
+void free_clist_table(clist_table table) {
     int i=0;
     for (;i < TABLE_SIZE; i++) {
         node * next;
@@ -48,8 +51,8 @@ void free_clist_table(string_clist_table table) {
             free(ptr->key);
             free(ptr);
             ptr = next;
-            }
         }
+    }
     free(table);
 }
 
@@ -64,7 +67,6 @@ unsigned int hashFunction(const char* key) {
 
 
 
-
 typedef struct IntNode {
     int data;
     char * key;
@@ -74,20 +76,21 @@ typedef struct IntNode {
 struct StringIntegerTable {
     int_node * data[TABLE_SIZE];
 };
-int_table create_int_table() {
-    int_table table = malloc(sizeof(struct StringIntegerTable));
+symbol_table create_int_table() {
+    symbol_table table = malloc(sizeof(struct StringIntegerTable));
+    set_all_null((void**)table->data, TABLE_SIZE);
     return table;
 }
-int_table add_to_int_table(int_table table, char *key, int data) {
+symbol_table add_to_int_table(symbol_table table, char *key, int data) {
     unsigned int hash = hashFunction(key);
     int_node * newNode = malloc(sizeof(int_node));
     newNode->data = data;
-    newNode->key = key;
+    newNode->key = duplicate_string(key);
     newNode->next = table->data[hash];
     table->data[hash] = newNode;
     return table;
 }
-int get_from_int_table(int_table table, char *key) {
+int get_from_int_table(symbol_table table, char *key) {
     unsigned int hash = hashFunction(key);
     int_node * ptr = table->data[hash];
     while (ptr != NULL) {
@@ -99,7 +102,7 @@ int get_from_int_table(int_table table, char *key) {
     return -1;
 }
 
-void free_int_table(int_table table) {
+void free_int_table(symbol_table table) {
     int i=0;
     for (;i < TABLE_SIZE; i++) {
         int_node * next;
