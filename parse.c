@@ -131,10 +131,16 @@ address_type validate_param(clist param, int line_index, symbol_table symbols_ta
 }
 
 Bool is_param_label(clist param) {
+    int i = 0;
     if(get_length(param) >= 32) {
         return False;
     }
-    if(isalpha(get_char_from_list(param, 0))) {
+    if(isalpha(get_char_from_list(param, i))) {
+        for (i=1; i < get_length(param); i++) {
+            if(!isalnum(get_char_from_list(param, i))) {
+                return False;
+            }
+        }
         return True;
     }
     return False;
