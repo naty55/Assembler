@@ -6,9 +6,9 @@
 #define ENDMACRO "endmcro"
 
 typedef enum {
-    A = 0,
-    E = 1,
-    R = 2
+    A = 0, /*Absolute*/
+    E = 1, /*External*/
+    R = 2  /*Relocatable*/
 } encoding;
 
 typedef enum {
