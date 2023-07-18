@@ -10,9 +10,9 @@
 #include <stdlib.h>
 
 void handle_data();
-void handle_operation(char * ptr_in_line, int line_index, plist instruciton_image, symbol_table symbols_table);
+void handle_operation(char * ptr_in_line, int line_index, plist instruciton_image, ptable symbols_table);
 void fill_missing_labels_addresses();
-void build_image(FILE * source_file, plist instruction_image, plist data_image, symbol_table symbols_table);
+void build_image(FILE * source_file, plist instruction_image, plist data_image, ptable symbols_table);
 char * get_next_param(char *ptr_in_line, clist param, Bool *read_param, int line_index);
 void handle_param(clist param, address_type param_type, i_line line, Bool is_target);
 
@@ -20,7 +20,7 @@ void handle_param(clist param, address_type param_type, i_line line, Bool is_tar
 void assemble(FILE * source_file) {
     plist insturction_image = create_plist();
     plist data_image = create_plist();
-    symbol_table symbols_table = create_int_table();
+    ptable symbols_table = create_ptable();
     build_image(source_file, insturction_image, data_image, symbols_table);
     fill_missing_labels_addresses();
     printf("============================\n");
@@ -38,46 +38,60 @@ void assemble(FILE * source_file) {
     }
     free_plist(insturction_image);
     free_plist(data_image);
-    free_int_table(symbols_table);
+    free_ptable(symbols_table);
 }
 
-void build_image(FILE * source_file, plist instruction_image, plist data_image, symbol_table symbols_table) {
+void build_image(FILE * source_file, plist instruction_image, plist data_image, ptable symbols_table) {
     char line[MAX_LINE_SIZE];
     char *ptr_in_line;
-    int i = 0;
+    int line_index = 0;
     while(fgets(line, MAX_LINE_SIZE, source_file) != NULL) {
-        i++;
+        symbol sym = NULL;
+        line_index++;
         ptr_in_line = line;
-        printf("%d\t: %s\n", i, ptr_in_line);
-        ptr_in_line = read_label(line, i, symbols_table, get_plist_length(instruction_image));
+        printf("%d\t: %s\n", line_index, ptr_in_line);
+        ptr_in_line = read_label(line, line_index, symbols_table, &sym, get_plist_length(instruction_image));
         if(is_line_comment_or_blank(ptr_in_line)) {
             continue;
         }
         if(is_line_data_instruction(ptr_in_line)) {
-            handle_data(ptr_in_line, i, data_image, symbols_table);
+            handle_data(ptr_in_line, line_index, data_image, symbols_table, sym);
         } else {
-            handle_operation(ptr_in_line, i, instruction_image, symbols_table);
+            handle_operation(ptr_in_line, line_index, instruction_image, symbols_table);
+            if(sym != NULL) {
+                symbol_set_encoding(sym, A);
+            }
+            
         }
         
     }
 }
 
-void handle_data(char * ptr_in_line, int line_index, plist data_image, symbol_table symbols_table) {
+void handle_data(char * ptr_in_line, int line_index, plist data_image, ptable symbols_table, symbol sym) {
+    if(sym == NULL) {
+        PRINT_ERROR_WITH_INDEX("INTERNAL ERROR sym==NULL", line_index);
+    }
     if(strncmp(ptr_in_line, ".string", 7) == 0) {
+        symbol_set_offset(sym, get_plist_length(data_image));
+        read_data(ptr_in_line, line_index, data_image);
         ptr_in_line += 7;
 
     } else if(strncmp(ptr_in_line, ".data", 5) == 0) {
+        symbol_set_offset(sym, get_plist_length(data_image));
+        read_data(ptr_in_line, line_index, data_image);
         ptr_in_line += 5;
     } else if(strncmp(ptr_in_line, ".extern", 7) == 0) {
-
+        symbol_set_encoding(sym, E);
+        symbol_set_offset(sym, 0);
+        return;
     } else if (strncmp(ptr_in_line, ".entry", 7) == 0) {
-
+        return;
     } else {
         PRINT_ERROR_WITH_INDEX("unkonwn instruction type", line_index);
     }
 }
 
-void handle_operation(char * ptr_in_line, int line_index, plist instruciton_image, symbol_table symbols_table) {
+void handle_operation(char * ptr_in_line, int line_index, plist instruciton_image, ptable symbols_table) {
     i_line first_line = create_iline();
     i_line second_line = NULL;
     i_line third_line = NULL;
