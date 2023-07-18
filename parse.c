@@ -2,7 +2,9 @@
 #include "error.h"
 #include "util.h"
 #include "list.h"
+#include "instruction_line.h"
 #include "hashmap.h"
+#include "symbol.h"
 #include "error.h"
 #include <stdlib.h>
 #include <ctype.h>
@@ -60,7 +62,7 @@ char * read_operation(char * ptr_in_line, operation * op, int line_index) {
     return ptr_in_line;
 }
 
-char * read_label(char *ptr_in_line ,int line_index, symbol_table symbols_table, int image_index) {
+char * read_label(char *ptr_in_line ,int line_index, ptable symbols_table, symbol* sym, int image_index) {
     char * label;
     ptr_in_line = skip_spaces(ptr_in_line);
     label = ptr_in_line;
@@ -73,9 +75,12 @@ char * read_label(char *ptr_in_line ,int line_index, symbol_table symbols_table,
         else {
             *ptr_in_line = 0;
             ptr_in_line = skip_spaces(ptr_in_line + 1);
-            add_to_int_table(symbols_table, label, 100 + image_index);
+            *sym = create_symbol();
+            symbol_set_encoding(*sym, A);
+            symbol_set_offset(*sym, 100 + image_index);
+            ptable_insert(symbols_table, label ,*sym);
             printf("Found Label : %s\n", label);
-            printf("Label location: %d\n", get_from_int_table(symbols_table, label));
+            printf("Label location: %d\n", symbol_get_offset(ptable_get(symbols_table, label)));
         }
     } else {
         ptr_in_line = label;
@@ -108,7 +113,7 @@ void check_for_extra_text(char *ptr_in_line, int line_index) {
     }
 }
 
-address_type validate_param(clist param, int line_index, symbol_table symbols_table) {
+address_type validate_param(clist param, int line_index, ptable symbols_table) {
     char * param_str;
     if(get_char_from_list(param, 0) == '@') {
         unsigned short reg = get_char_from_list(param, 2) - '0';
@@ -144,4 +149,14 @@ Bool is_param_label(clist param) {
         return True;
     }
     return False;
+}
+
+void read_data(char * ptr_in_line, int line_index, plist data_image) {
+    i_line data = create_iline();
+    append_pointer(data_image, data);
+}
+
+void read_string(char * ptr_in_line, int line_index, plist data_image) {
+    i_line data = create_iline();
+    append_pointer(data_image, data);
 }
