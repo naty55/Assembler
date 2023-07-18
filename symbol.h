@@ -1,4 +1,4 @@
-
+#include "constants.h"
 typedef struct Symbol *symbol; 
 
 
