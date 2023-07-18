@@ -43,7 +43,7 @@ char append_chars(clist l, char *items) {
     return items[i];
 }
 
-char read_string(clist l, char * str) {
+char clist_read_string(clist l, char * str) {
     str = skip_spaces(str);
     while(!isspace(*str) && *str != '\n' && *str != '\0') {
         append_char(l, *str);

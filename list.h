@@ -10,7 +10,7 @@ clist create_clist();
 char append_char(clist l, char c);
 char append_chars(clist l, char *items);
 char append_n_chars(clist l, char *items, int size);
-char read_string(clist l, char * str);
+char clist_read_string(clist l, char * str);
 char get_char_from_list(clist l, int i);
 unsigned long get_length(clist l);
 char * list_to_string(clist l);
