@@ -9,13 +9,12 @@
 #include <ctype.h>
 #include <stdlib.h>
 
-void handle_data();
 void handle_operation(char * ptr_in_line, int line_index, plist instruciton_image, ptable symbols_table);
 void fill_missing_labels_addresses();
 void build_image(FILE * source_file, plist instruction_image, plist data_image, ptable symbols_table);
 char * get_next_param(char *ptr_in_line, clist param, Bool *read_param, int line_index);
 void handle_param(clist param, address_type param_type, i_line line, Bool is_target);
-
+void handle_data(char * ptr_in_line, int line_index, plist data_image, ptable symbols_table, symbol sym);
 
 void assemble(FILE * source_file) {
     plist insturction_image = create_plist();
@@ -48,8 +47,7 @@ void build_image(FILE * source_file, plist instruction_image, plist data_image, 
     while(fgets(line, MAX_LINE_SIZE, source_file) != NULL) {
         symbol sym = NULL;
         line_index++;
-        ptr_in_line = line;
-        printf("%d\t: %s\n", line_index, ptr_in_line);
+        printf("%d\t: %s\n", line_index, line);
         ptr_in_line = read_label(line, line_index, symbols_table, &sym, get_plist_length(instruction_image));
         if(is_line_comment_or_blank(ptr_in_line)) {
             continue;
@@ -68,26 +66,27 @@ void build_image(FILE * source_file, plist instruction_image, plist data_image, 
 }
 
 void handle_data(char * ptr_in_line, int line_index, plist data_image, ptable symbols_table, symbol sym) {
+    data_instruction inst;
     if(sym == NULL) {
-        PRINT_ERROR_WITH_INDEX("INTERNAL ERROR sym==NULL", line_index);
+        PRINT_ERROR_WITH_INDEX("INTERNAL ERROR sym==NULL", line_index); /* TODO: See open question issue #3*/
     }
-    if(strncmp(ptr_in_line, ".string", 7) == 0) {
+    ptr_in_line = read_data_instruction(ptr_in_line, &inst, line_index);
+    switch (inst)
+    {
+    case STRING:
+        symbol_set_offset(sym, get_plist_length(data_image));
+        read_string(ptr_in_line, line_index, data_image);
+        break;
+    case DATA:
         symbol_set_offset(sym, get_plist_length(data_image));
         read_data(ptr_in_line, line_index, data_image);
-        ptr_in_line += 7;
-
-    } else if(strncmp(ptr_in_line, ".data", 5) == 0) {
-        symbol_set_offset(sym, get_plist_length(data_image));
-        read_data(ptr_in_line, line_index, data_image);
-        ptr_in_line += 5;
-    } else if(strncmp(ptr_in_line, ".extern", 7) == 0) {
+        break;
+    case EXTERN:
         symbol_set_encoding(sym, E);
         symbol_set_offset(sym, 0);
-        return;
-    } else if (strncmp(ptr_in_line, ".entry", 7) == 0) {
-        return;
-    } else {
-        PRINT_ERROR_WITH_INDEX("unkonwn instruction type", line_index);
+        break;
+    case ENTRY:
+        break;
     }
 }
 
@@ -108,11 +107,7 @@ void handle_operation(char * ptr_in_line, int line_index, plist instruciton_imag
     set_operation(first_line, op);
     expected_params_to_read = get_params_to_read(op);
     if(0 < expected_params_to_read) {
-        ptr_in_line = skip_spaces(ptr_in_line);
-        while (*ptr_in_line != '\0' && !isspace(*ptr_in_line) && *ptr_in_line != ',') {
-            append_char(param1, *ptr_in_line++);
-            read_param = True;
-        }
+        ptr_in_line = read_next_param(ptr_in_line, param1, &read_param);
         printf("Param 1: '%s'\n", list_to_string(param1));
         param1_type = validate_param(param1, line_index, symbols_table);
     }

@@ -11,10 +11,12 @@
 #include <string.h>
 
 Bool is_line_comment_or_blank(char * ptr_in_line) {
+    ptr_in_line = skip_spaces(ptr_in_line);
     return (Bool)(*ptr_in_line == ';' || *ptr_in_line == '\0');
 }
 
 Bool is_line_data_instruction(char * ptr_in_line) {
+    ptr_in_line = skip_spaces(ptr_in_line);
     return (Bool)(*ptr_in_line == '.');
 }
 
@@ -96,20 +98,22 @@ char * get_next_param(char *ptr_in_line, clist param, Bool *read_param, int line
         PRINT_ERROR_WITH_INDEX("Missing comma between params", line_index);
         return ptr_in_line;
     }
+    return read_next_param(ptr_in_line, param, read_param);
+}
+
+char * read_next_param(char * ptr_in_line, clist param, Bool *read_param) {
     ptr_in_line = skip_spaces(ptr_in_line);
     while (*ptr_in_line != '\0' && !isspace(*ptr_in_line) && *ptr_in_line != ',') {
         append_char(param, *ptr_in_line++);
         *read_param = True;
     }
-        return ptr_in_line;
+    return ptr_in_line;
 }
 
 void check_for_extra_text(char *ptr_in_line, int line_index) {
-    while(*ptr_in_line != '\0') { 
-        if(!isspace(*ptr_in_line++)) {
-            PRINT_ERROR_WITH_INDEX("unidentified text after end of line", line_index);
+    if(!is_str_empty(ptr_in_line)) {
+        PRINT_ERROR_WITH_INDEX("Unidentified text after end of line", line_index);
             return;
-        }
     }
 }
 
@@ -150,13 +154,98 @@ Bool is_param_label(clist param) {
     }
     return False;
 }
+char * read_data_instruction(char * ptr_in_line, data_instruction * inst, int line_index) {
+    ptr_in_line = skip_spaces(ptr_in_line);
+    if(strncmp(ptr_in_line, ".string", 7) == 0) {
+        *inst = STRING;
+        ptr_in_line += 7;
+
+    } else if(strncmp(ptr_in_line, ".data", 5) == 0) {
+        *inst = DATA;
+        ptr_in_line += 5;
+    } else if(strncmp(ptr_in_line, ".extern", 7) == 0) {
+        ptr_in_line += 7;
+        *inst = EXTERN;
+    } else if (strncmp(ptr_in_line, ".entry", 7) == 0) {
+        ptr_in_line += 7;
+        *inst = ENTRY;
+    } else {
+        PRINT_ERROR_WITH_INDEX("unkonwn instruction type", line_index);
+    }
+    if(!isspace(*ptr_in_line)) {
+        PRINT_ERROR_WITH_INDEX("unkonwn instruction type", line_index);
+    }
+    return ptr_in_line;
+}
 
 void read_data(char * ptr_in_line, int line_index, plist data_image) {
-    i_line data = create_iline();
-    append_pointer(data_image, data);
+    clist param = create_clist();
+    Bool read_param = False;
+    int param_counter = 0;
+    do {
+        clear_clist(param);
+        ptr_in_line = read_next_param(ptr_in_line, param, &read_param);
+        ptr_in_line = skip_spaces(ptr_in_line);
+        if(read_param) {
+            printf("Param number %d: '%s'\n", param_counter, list_to_string(param));
+            param_counter++;
+            i_line data = create_iline();
+            append_pointer(data_image, data);
+        } else {
+            if(param_counter == 0){
+                PRINT_ERROR_WITH_INDEX("No data after data instruction", line_index);
+                free_clist(param);
+                return;
+            } else {
+                if(*ptr_in_line == ',') {
+                    PRINT_ERROR_WITH_INDEX("Extra comma after data", line_index);
+                    free_clist(param);
+                    return;
+                }
+            }    
+        }
+        if(*ptr_in_line == ',') {
+            ptr_in_line++;
+        } else if(*ptr_in_line != '\0'){    
+            printf("c: '%c'\n", *ptr_in_line);
+            PRINT_ERROR_WITH_INDEX("Missing comma between params", line_index);
+            free_clist(param);
+            return;
+        }
+    } while (*ptr_in_line != '\0');
+    free_clist(param);
+    
 }
 
 void read_string(char * ptr_in_line, int line_index, plist data_image) {
+    clist str = create_clist();
+    ptr_in_line = skip_spaces(ptr_in_line);
+    if(*ptr_in_line != '"') {
+        PRINT_ERROR_WITH_INDEX("Invalid string, missing '\"' before string", line_index);
+        free_clist(str);
+        return;
+    }
+    ptr_in_line++;
+    while (*ptr_in_line != '\0' && *ptr_in_line != '"') {
+        i_line data = create_iline();
+        append_char(str, *ptr_in_line);
+        append_pointer(data_image, data);
+        ptr_in_line++;
+    }
+    if(*ptr_in_line == '"') {
+        ptr_in_line++;
+    } else {
+        PRINT_ERROR_WITH_INDEX("Invalid string, missing '\"' after string", line_index);
+        free_clist(str);
+        return;
+    }
+    if(!is_str_empty(ptr_in_line)){
+        printf("c: '%c'\n", *ptr_in_line);
+        PRINT_ERROR_WITH_INDEX("Unideintified text after .string instruction", line_index);
+        return;
+    }
+    printf("Found string: '%s'\n", list_to_string(str));
     i_line data = create_iline();
     append_pointer(data_image, data);
+    free_clist(str);
 }
