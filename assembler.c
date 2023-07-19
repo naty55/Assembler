@@ -15,6 +15,7 @@ void build_image(FILE * source_file, plist instruction_image, plist data_image, 
 char * get_next_param(char *ptr_in_line, clist param, Bool *read_param, int line_index);
 void handle_param(clist param, address_type param_type, i_line line, Bool is_target);
 void handle_data(char * ptr_in_line, int line_index, plist data_image, ptable symbols_table, symbol sym);
+void print_image(plist instruction_image, plist data_image);
 
 void assemble(FILE * source_file) {
     plist insturction_image = create_plist();
@@ -22,19 +23,7 @@ void assemble(FILE * source_file) {
     ptable symbols_table = create_ptable();
     build_image(source_file, insturction_image, data_image, symbols_table);
     fill_missing_labels_addresses();
-    printf("============================\n");
-    printf("=========== RESULT =========\n");
-    printf("============================\n");
-    printf("====== %ld\t===== %ld\t====\n", get_plist_length(insturction_image), get_plist_length(data_image));
-    printf("============================\n");
-    printf("============================\n");
-    int i = 0;
-    for (; i < get_plist_length(insturction_image); i++) {
-        print_iline_in_base64(get_pointer_from_list(insturction_image, i));
-    }
-    for (i = 0; i < get_plist_length(data_image); i++) {
-        print_iline_in_base64(get_pointer_from_list(data_image, i));
-    }
+    print_image(insturction_image, data_image);
     free_plist(insturction_image);
     free_plist(data_image);
     free_ptable(symbols_table);
@@ -171,4 +160,18 @@ void fill_missing_labels_addresses() {
 
 }
 
-
+void print_image(plist instruction_image, plist data_image) {
+    int i = 0;
+    printf("============================\n");
+    printf("=========== RESULT =========\n");
+    printf("============================\n");
+    printf("====== %ld\t===== %ld\t====\n", get_plist_length(instruction_image), get_plist_length(data_image));
+    printf("============================\n");
+    printf("============================\n");
+    for (; i < get_plist_length(instruction_image); i++) {
+        print_iline_in_base64(get_pointer_from_list(instruction_image, i));
+    }
+    for (i = 0; i < get_plist_length(data_image); i++) {
+        print_iline_in_base64(get_pointer_from_list(data_image, i));
+    }
+}
