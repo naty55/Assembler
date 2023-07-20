@@ -45,7 +45,11 @@ void set_label_address(i_line i, unsigned short label_address) {
 }
 
 void set_data_full(i_line i, short data) {
-    i->data = (i->data & 0x000) | (data);
+    if(data < 0) {
+        i->data = (1 << 12) + data;
+    } else {
+        i->data = (i->data & 0x000) | (data);
+    }
 }
 
 void set_char(i_line i, char data) {
@@ -53,7 +57,11 @@ void set_char(i_line i, char data) {
 }
 
 void set_data(i_line i, short data) {
-    i->data = (i->data & 0x003) | (data << 2);
+    if(data < 0) {
+        i->data = (1 << 12) + (data << 2);
+    } else {
+        i->data = (i->data & 0x000) | (data << 2);
+    }
 }
 
 void set_operation(i_line i, operation op) {
