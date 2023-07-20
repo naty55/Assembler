@@ -32,35 +32,27 @@ void printBinary(unsigned short value) {
     printf("\n");
 }
 
-Bool is_string_number(char *str) {
-    int i = 0;
+Bool string_to_number(char *str, int * number) {
+    int sign = 1;
     Bool hasDigits;
-    while (isspace(str[i])) {
-        i++;
+    *number = 0;
+    str = skip_spaces(str);
+    if (*str == '-') {
+        sign = -1;
+        str++;
+    } else if(*str == '+') {
+        str++;
     }
-
-    if (str[i] == '-' || str[i] == '+') {
-        i++;
-    }
+    
     hasDigits = False;
-    while (str[i] >= '0' && str[i] <= '9') {
+    while (*str >= '0' && *str <= '9') {
         hasDigits = True;
-        i++;
+        *number *= 10;
+        *number += *str - '0';
+        str++;
     }
-    if (str[i] == '.') {
-        i++;
-        while (str[i] >= '0' && str[i] <= '9') {
-            hasDigits = True;
-            i++;
-        }
-    }
-    while (isspace(str[i])) {
-        i++;
-    }
-    if(str[i] == '\0' && hasDigits) {
-        return True;
-    }
-    return False;
+    *number *= sign;
+    return is_str_empty(str) && hasDigits;
 }
 
 char * duplicate_string(char * str){

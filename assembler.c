@@ -13,24 +13,26 @@ void handle_operation(char * ptr_in_line, int line_index, plist instruciton_imag
 void fill_missing_labels_addresses(ptable missing_symbols, ptable symbols_table, unsigned int instruction_image_size);
 void build_image(FILE * source_file, plist instruction_image, plist data_image, ptable symbols_table, ptable missing_symbols);
 char * get_next_param(char *ptr_in_line, clist param, Bool *read_param, int line_index);
-void handle_param(clist param, address_type param_type, i_line line, Bool is_target, ptable missing_symbols);
+void handle_param(clist param, int param_data, address_type param_type, i_line line, Bool is_target, ptable missing_symbols);
 void handle_data(char * ptr_in_line, int line_index, plist data_image, ptable symbols_table, symbol sym);
 void print_image(plist instruction_image, plist data_image);
 
 void assemble(FILE * source_file) {
-    plist insturction_image = create_plist();
+    plist instruction_image = create_plist();
     plist data_image = create_plist();
     ptable symbols_table = create_ptable();
     ptable missing_symbols = create_ptable();
     ptable entries = create_ptable();
     ptable externals = create_ptable();
-    build_image(source_file, insturction_image, data_image, symbols_table, missing_symbols);
-    fill_missing_labels_addresses(missing_symbols, symbols_table, get_plist_length(insturction_image));
-    print_image(insturction_image, data_image);
-    free_plist(insturction_image);
+    build_image(source_file, instruction_image, data_image, symbols_table, missing_symbols);
+    fill_missing_labels_addresses(missing_symbols, symbols_table, get_plist_length(instruction_image));
+    print_image(instruction_image, data_image);
+    free_plist(instruction_image);
     free_plist(data_image);
     free_ptable(symbols_table);
     free_ptable(missing_symbols);
+    free_ptable(entries);
+    free_ptable(externals);
 }
 
 void build_image(FILE * source_file, plist instruction_image, plist data_image, ptable symbols_table, ptable missing_symbols) {
@@ -91,8 +93,10 @@ void handle_operation(char * ptr_in_line, int line_index, plist instruciton_imag
     Bool read_param;
     clist param1 = create_clist();
     address_type param1_type;
+    int param1_data;
     clist param2 = create_clist();
     address_type param2_type;
+    int param2_data;
     short expected_params_to_read;
 
     ptr_in_line = read_operation(ptr_in_line, &op, line_index);
@@ -102,19 +106,19 @@ void handle_operation(char * ptr_in_line, int line_index, plist instruciton_imag
     if(0 < expected_params_to_read) {
         ptr_in_line = read_next_param(ptr_in_line, param1, &read_param);
         printf("Param 1: '%s'\n", list_to_string(param1));
-        param1_type = validate_param(param1, line_index, symbols_table);
+        param1_type = validate_param(param1, &param1_data, line_index, symbols_table);
     }
 
     if(1 < expected_params_to_read) {
         ptr_in_line =  get_next_param(ptr_in_line, param2, &read_param, line_index);
         printf("Param 2: '%s'\n", list_to_string(param2));
-        param2_type = validate_param(param2, line_index, symbols_table);
+        param2_type = validate_param(param2, &param2_data, line_index, symbols_table);
     }
 
     if(expected_params_to_read == 1) {
         set_target_address_type(first_line, param1_type);
         second_line = create_iline();
-        handle_param(param1, param1_type, second_line, True, missing_symbols);
+        handle_param(param1, param1_data, param1_type, second_line, True, missing_symbols);
     
     }
     if(expected_params_to_read == 2) {
@@ -122,13 +126,13 @@ void handle_operation(char * ptr_in_line, int line_index, plist instruciton_imag
         set_target_address_type(first_line, param2_type);
         if(param1_type == param2_type && param1_type == IMM_REG_ADDR) {
             second_line = create_iline();
-            handle_param(param1, param1_type, second_line, False, missing_symbols);
-            handle_param(param2, param2_type, second_line, True, missing_symbols);
+            handle_param(param1, param1_data, param1_type, second_line, False, missing_symbols);
+            handle_param(param2, param2_data, param2_type, second_line, True, missing_symbols);
         } else {
             second_line = create_iline();
             third_line = create_iline();
-            handle_param(param1, param1_type, second_line, False, missing_symbols);
-            handle_param(param2, param2_type, third_line, True, missing_symbols);
+            handle_param(param1, param1_data, param1_type, second_line, False, missing_symbols);
+            handle_param(param2, param2_data, param2_type, third_line, True, missing_symbols);
         }
     }
 
@@ -142,7 +146,7 @@ void handle_operation(char * ptr_in_line, int line_index, plist instruciton_imag
 
 }
 
-void handle_param(clist param, address_type param_type, i_line line, Bool is_target, ptable missing_symbols) {
+void handle_param(clist param, int param_data, address_type param_type, i_line line, Bool is_target, ptable missing_symbols) {
     switch (param_type)
     {
     case IMM_REG_ADDR:
@@ -164,7 +168,7 @@ void handle_param(clist param, address_type param_type, i_line line, Bool is_tar
     }
         break;
     case ABS_ADDR:
-        set_data(line, -5);
+        set_data(line, param_data);
         break;
     }
 

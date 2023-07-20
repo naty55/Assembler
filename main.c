@@ -5,6 +5,11 @@
 #include "constants.h"
 
 int main(int argc, char const *argv[]) {
+    /*
+    int a = -2147483648;
+    char b = a;
+    printf("Value: a: %d b: %d,\n", a, b);
+    */
     char file_as[] = "test.as";
     char file_am[] = "test.am";
     FILE * i_file = fopen(file_as, "r");

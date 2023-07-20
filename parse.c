@@ -118,7 +118,7 @@ void check_for_extra_text(char *ptr_in_line, int line_index) {
     }
 }
 
-address_type validate_param(clist param, int line_index, ptable symbols_table) {
+address_type validate_param(clist param, int * param_data, int line_index, ptable symbols_table) {
     char * param_str;
     if(get_char_from_list(param, 0) == '@') {
         unsigned short reg = get_char_from_list(param, 2) - '0';
@@ -129,7 +129,8 @@ address_type validate_param(clist param, int line_index, ptable symbols_table) {
         return IMM_REG_ADDR;
     }
      param_str = list_to_string(param);
-    if(is_string_number(param_str)) {
+    if(string_to_number(param_str, param_data)) {
+        printf("Found Data: %d\n", *param_data);
         return ABS_ADDR;
     }
     if(is_param_label(param)) {
@@ -180,18 +181,29 @@ char * read_data_instruction(char * ptr_in_line, data_instruction * inst, int li
 }
 
 void read_data(char * ptr_in_line, int line_index, plist data_image) {
+    int param_data;
     clist param = create_clist();
+    char * param_str;
     Bool read_param = False;
     int param_counter = 0;
     do {
         clear_clist(param);
+        param_data = 0;
         ptr_in_line = read_next_param(ptr_in_line, param, &read_param);
         ptr_in_line = skip_spaces(ptr_in_line);
         if(read_param) {
-            printf("Param number %d: '%s'\n", param_counter, list_to_string(param));
+            param_str = list_to_string(param);
+            printf("Param number %d: '%s'\n", param_counter, param_str);
             param_counter++;
-            i_line data = create_iline();
-            plist_append(data_image, data);
+            if(string_to_number(param_str, &param_data)) {
+                i_line data_line = create_iline();
+                set_data_full(data_line, param_data);
+                plist_append(data_image, data_line);
+            } else {
+                PRINT_ERROR_WITH_INDEX("Data is not valid integer", line_index);
+            }
+            free(param_str);
+            
         } else {
             if(param_counter == 0){
                 PRINT_ERROR_WITH_INDEX("No data after data instruction", line_index);
@@ -228,9 +240,10 @@ void read_string(char * ptr_in_line, int line_index, plist data_image) {
     }
     ptr_in_line++;
     while (*ptr_in_line != '\0' && *ptr_in_line != '"') {
-        i_line data = create_iline();
+        i_line data_line = create_iline();
+        set_char(data_line, *ptr_in_line);
         append_char(str, *ptr_in_line);
-        plist_append(data_image, data);
+        plist_append(data_image, data_line);
         ptr_in_line++;
     }
     if(*ptr_in_line == '"') {
@@ -241,7 +254,6 @@ void read_string(char * ptr_in_line, int line_index, plist data_image) {
         return;
     }
     if(!is_str_empty(ptr_in_line)){
-        printf("c: '%c'\n", *ptr_in_line);
         PRINT_ERROR_WITH_INDEX("Unideintified text after .string instruction", line_index);
         return;
     }

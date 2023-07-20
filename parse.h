@@ -11,7 +11,7 @@ char * read_operation(char * ptr_in_line, operation * op, int line_index);
 char * get_next_param(char *ptr_in_line, clist param, Bool *read_param, int line_index);
 char * read_next_param(char * ptr_in_line, clist param, Bool *read_param);
 void check_for_extra_text(char *ptr_in_line, int line_index);
-address_type validate_param(clist param, int line_index, ptable symbols_table);
+address_type validate_param(clist param, int *param_data, int line_index, ptable symbols_table);
 Bool is_param_label(clist param);
 char * read_data_instruction(char * ptr_in_line, data_instruction * inst, int line_index);
 void read_data(char * ptr_in_line, int line_index, plist data_image);
