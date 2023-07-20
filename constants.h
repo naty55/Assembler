@@ -4,6 +4,7 @@
 
 #define MACRO "mcro"
 #define ENDMACRO "endmcro"
+#define IMAGE_OFFSET_SIZE 100
 
 typedef enum {
     A = 0, /*Absolute*/
