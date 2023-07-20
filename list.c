@@ -92,7 +92,7 @@ plist create_plist() {
     list->length = 0;
     return list;
 }
-void* append_pointer(plist l, void* item) {
+void* plist_append(plist l, void* item) {
      if (l->size == l->length) /* We are out of place*/
     {
         l->data = realloc(l->data, 2 * l->size * sizeof(void *));
@@ -102,9 +102,9 @@ void* append_pointer(plist l, void* item) {
     return item;
 }
 
-void* append_pointer_if_not_null(plist l, void* item) {
+void* plist_append_if_not_null(plist l, void* item) {
     if(item != NULL) {
-        return append_pointer(l, item);
+        return plist_append(l, item);
     }
     return item;
 }

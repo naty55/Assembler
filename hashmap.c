@@ -40,6 +40,21 @@ void* ptable_get(ptable table, char *key) {
     return NULL;
 }
 
+plist ptable_get_keys(ptable table) {
+    int i = 0;
+    plist keys = create_plist();
+    for (;i < TABLE_SIZE; i++) {
+        node * next;
+        node * ptr = table->data[i];
+        while (ptr != NULL) {
+            next = ptr->next;
+            plist_append(keys, duplicate_string(ptr->key));
+            ptr = next;
+        }
+    }
+    return keys;
+}
+
 void free_ptable(ptable table) {
     int i=0;
     for (;i < TABLE_SIZE; i++) {

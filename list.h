@@ -23,8 +23,8 @@ void free_clist(clist l);
 */
 typedef struct PointerList *plist;
 plist create_plist();
-void* append_pointer(plist l, void* item);
-void* append_pointer_if_not_null(plist l, void* item);
+void* plist_append(plist l, void* item);
+void* plist_append_if_not_null(plist l, void* item);
 void* get_pointer_from_list(plist l, int i);
 unsigned long get_plist_length(plist l);
 plist clear_plist(plist l);

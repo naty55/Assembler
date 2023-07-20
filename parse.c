@@ -64,7 +64,7 @@ char * read_operation(char * ptr_in_line, operation * op, int line_index) {
     return ptr_in_line;
 }
 
-char * read_label(char *ptr_in_line ,int line_index, ptable symbols_table, symbol* sym, int image_index) {
+char * read_label(char *ptr_in_line ,int line_index, ptable symbols_table, symbol* sym, unsigned int image_index) {
     char * label;
     ptr_in_line = skip_spaces(ptr_in_line);
     label = ptr_in_line;
@@ -78,8 +78,9 @@ char * read_label(char *ptr_in_line ,int line_index, ptable symbols_table, symbo
             *ptr_in_line = 0;
             ptr_in_line = skip_spaces(ptr_in_line + 1);
             *sym = create_symbol();
-            symbol_set_encoding(*sym, A);
-            symbol_set_offset(*sym, 100 + image_index);
+            symbol_set_encoding(*sym, R);
+            symbol_set_offset(*sym, IMAGE_OFFSET_SIZE + image_index);
+            symbol_set_is_data(*sym, False);
             ptable_insert(symbols_table, label ,*sym);
             printf("Found Label : %s\n", label);
             printf("Label location: %d\n", symbol_get_offset(ptable_get(symbols_table, label)));
@@ -166,8 +167,8 @@ char * read_data_instruction(char * ptr_in_line, data_instruction * inst, int li
     } else if(strncmp(ptr_in_line, ".extern", 7) == 0) {
         ptr_in_line += 7;
         *inst = EXTERN;
-    } else if (strncmp(ptr_in_line, ".entry", 7) == 0) {
-        ptr_in_line += 7;
+    } else if (strncmp(ptr_in_line, ".entry", 6) == 0) {
+        ptr_in_line += 6;
         *inst = ENTRY;
     } else {
         PRINT_ERROR_WITH_INDEX("unkonwn instruction type", line_index);
@@ -190,7 +191,7 @@ void read_data(char * ptr_in_line, int line_index, plist data_image) {
             printf("Param number %d: '%s'\n", param_counter, list_to_string(param));
             param_counter++;
             i_line data = create_iline();
-            append_pointer(data_image, data);
+            plist_append(data_image, data);
         } else {
             if(param_counter == 0){
                 PRINT_ERROR_WITH_INDEX("No data after data instruction", line_index);
@@ -229,7 +230,7 @@ void read_string(char * ptr_in_line, int line_index, plist data_image) {
     while (*ptr_in_line != '\0' && *ptr_in_line != '"') {
         i_line data = create_iline();
         append_char(str, *ptr_in_line);
-        append_pointer(data_image, data);
+        plist_append(data_image, data);
         ptr_in_line++;
     }
     if(*ptr_in_line == '"') {
@@ -246,6 +247,6 @@ void read_string(char * ptr_in_line, int line_index, plist data_image) {
     }
     printf("Found string: '%s'\n", list_to_string(str));
     i_line data = create_iline();
-    append_pointer(data_image, data);
+    plist_append(data_image, data);
     free_clist(str);
 }

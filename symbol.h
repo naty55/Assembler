@@ -1,12 +1,15 @@
 #ifndef __SYMBOL_H
 #define __SYMBOL_H
 #include "constants.h"
+#include "util.h"
 typedef struct Symbol *symbol; 
 
 symbol create_symbol();
-int symbol_get_offset(symbol sym);
+unsigned int symbol_get_offset(symbol sym);
 encoding symbol_get_encoding(symbol sym);
-void symbol_set_offset(symbol sym, int offset);
+Bool symbol_is_data(symbol sym);
+void symbol_set_offset(symbol sym, unsigned int offset);
 void symbol_set_encoding(symbol sym, encoding encode);
+void symbol_set_is_data(symbol sym, Bool is_data);
 
 #endif
