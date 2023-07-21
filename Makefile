@@ -6,7 +6,6 @@ OBJECTS = main.o assembler.o pre_assembler.o util.o constants.o list.o hashmap.o
 
 HEADERS = assembler.h pre_assembler.h util.h constants.h list.h hashmap.h instruction_line.h error.h parse.h symbol.h
 
-
 assembler: $(OBJECTS)
 	$(MAIN_FLAG) $(OBJECTS) -o assembler
 
@@ -18,7 +17,6 @@ assembler.o: assembler.c $(HEADERS)
 
 constants.o: constants.c $(HEADERS)
 	$(OBJ_FLAG) constants.c -o constants.o
-
 
 list.o: list.c $(HEADERS)
 	$(OBJ_FLAG) list.c -o list.o
@@ -40,12 +38,6 @@ symbol.o: symbol.c $(HEADERS)
 
 util.o: util.c $(HEADERS)
 	$(OBJ_FLAG) util.c -o util.o
-
-#output.o: output.c $(HEADERS)
-#	$(OBJ_FLAG) output.c -o output.o
-
-#debug: $(OBJECTS)
-#	$(MAIN_FLAG) $(OBJECTS) -o assembler-debug
 
 clean:
 	rm -f *.o

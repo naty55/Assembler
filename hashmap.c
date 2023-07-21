@@ -14,11 +14,13 @@ typedef struct Node {
 struct StringPointerTable {
     node * data[TABLE_SIZE];
 };
+
 ptable create_ptable() {
     ptable table = malloc(sizeof(struct StringPointerTable));
     set_all_null((void**)table->data, TABLE_SIZE);
     return table;
 }
+
 ptable ptable_insert(ptable table, char *key, void* ptr) {
     unsigned int hash = hashFunction(key);
     node * newNode = malloc(sizeof(node));
@@ -28,6 +30,7 @@ ptable ptable_insert(ptable table, char *key, void* ptr) {
     table->data[hash] = newNode;
     return table;
 }
+
 void* ptable_get(ptable table, char *key) {
     unsigned int hash = hashFunction(key);
     node * ptr = table->data[hash];

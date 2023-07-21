@@ -16,3 +16,4 @@ Bool is_param_label(clist param);
 char * read_data_instruction(char * ptr_in_line, data_instruction * inst, int line_index);
 void read_data(char * ptr_in_line, int line_index, plist data_image);
 void read_string(char * ptr_in_line, int line_index, plist data_image);
+void read_externals(char * ptr_in_line, ptable symbols_table, int line_index);

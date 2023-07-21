@@ -262,3 +262,52 @@ void read_string(char * ptr_in_line, int line_index, plist data_image) {
     plist_append(data_image, data);
     free_clist(str);
 }
+
+void read_externals(char * ptr_in_line, ptable symbols_table, int line_index) {
+    clist param = create_clist();
+    char * param_str;
+    Bool read_param = False;
+    int param_counter = 0;
+    do {
+        clear_clist(param);
+        ptr_in_line = read_next_param(ptr_in_line, param, &read_param);
+        ptr_in_line = skip_spaces(ptr_in_line);
+        if(read_param) {
+            param_counter++;
+            param_str = list_to_string(param);
+            printf("Found external %d: '%s'\n", param_counter, list_to_string(param));
+            if(is_param_label(param)) {
+                if(ptable_get(symbols_table, param_str) == NULL) {
+                    symbol sym = create_symbol();
+                    symbol_set_offset(sym, 0);
+                    symbol_set_is_data(sym, False);
+                    symbol_set_encoding(sym, E);
+                    ptable_insert(symbols_table, param_str, sym);
+                } else {
+                    PRINT_ERROR_WITH_INDEX("already defined symbol", line_index);
+                }
+            }
+            
+        } else {
+            if(param_counter == 0){
+                PRINT_ERROR_WITH_INDEX("No symbols after .extern instruction", line_index);
+                free_clist(param);
+                return;
+            } else {
+                if(*ptr_in_line == ',') {
+                    PRINT_ERROR_WITH_INDEX("Extra comma after symbols", line_index);
+                    free_clist(param);
+                    return;
+                }
+            }    
+        }
+        if(*ptr_in_line == ',') {
+            ptr_in_line++;
+        } else if(*ptr_in_line != '\0'){ 
+            PRINT_ERROR_WITH_INDEX("Missing comma between params", line_index);
+            free_clist(param);
+            return;
+        }
+    } while (*ptr_in_line != '\0');
+
+}

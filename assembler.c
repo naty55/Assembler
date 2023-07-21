@@ -58,11 +58,13 @@ void build_image(FILE * source_file, plist instruction_image, plist data_image, 
 
 void handle_data(char * ptr_in_line, int line_index, plist data_image, ptable symbols_table, symbol sym) {
     data_instruction inst;
-    if(sym == NULL) {
+    ptr_in_line = read_data_instruction(ptr_in_line, &inst, line_index);
+
+    if(sym == NULL && inst != EXTERN && inst != ENTRY) {
         PRINT_ERROR_WITH_INDEX("INTERNAL ERROR sym==NULL", line_index); /* TODO: See open question issue #3*/
         return;
     }
-    ptr_in_line = read_data_instruction(ptr_in_line, &inst, line_index);
+    
     switch (inst)
     {
     case STRING:
@@ -76,9 +78,7 @@ void handle_data(char * ptr_in_line, int line_index, plist data_image, ptable sy
         read_data(ptr_in_line, line_index, data_image);
         break;
     case EXTERN:
-        symbol_set_encoding(sym, E);
-        symbol_set_is_data(sym, False);
-        symbol_set_offset(sym, 0);
+        read_externals(ptr_in_line, symbols_table, line_index);
         break;
     case ENTRY:
         break;
