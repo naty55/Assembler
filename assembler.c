@@ -16,7 +16,6 @@ void build_image(FILE * source_file, plist instruction_image, plist data_image, 
 char * get_next_param(char *ptr_in_line, clist param, Bool *read_param, int line_index);
 void handle_param(clist param, int param_data, address_type param_type, i_line line, Bool is_target, ptable missing_symbols);
 void handle_data(char * ptr_in_line, int line_index, plist data_image, ptable symbols_table, symbol sym, plist entries);
-void print_image(plist instruction_image, plist data_image);
 
 void assemble(FILE * source_file, char * filename) {
     plist instruction_image = create_plist();
@@ -27,7 +26,6 @@ void assemble(FILE * source_file, char * filename) {
     plist externals = create_plist();
     build_image(source_file, instruction_image, data_image, symbols_table, missing_symbols, entries);
     fill_missing_labels_addresses(missing_symbols, symbols_table, get_plist_length(instruction_image));
-    print_image(instruction_image, data_image);
     write_result_files(instruction_image, data_image, symbols_table, externals, entries, filename);
     free_plist(instruction_image);
     free_plist(data_image);
@@ -208,20 +206,4 @@ void fill_missing_labels_addresses(ptable missing_symbols, ptable symbols_table,
         }
     }
     free_plist(keys);
-}
-
-void print_image(plist instruction_image, plist data_image) {
-    int i = 0;
-    printf("============================\n");
-    printf("=========== RESULT =========\n");
-    printf("============================\n");
-    printf("====== %ld\t===== %ld\t====\n", get_plist_length(instruction_image), get_plist_length(data_image));
-    printf("============================\n");
-    printf("============================\n");
-    for (; i < get_plist_length(instruction_image); i++) {
-        print_iline_in_base64(get_pointer_from_list(instruction_image, i));
-    }
-    for (i = 0; i < get_plist_length(data_image); i++) {
-        print_iline_in_base64(get_pointer_from_list(data_image, i));
-    }
 }
