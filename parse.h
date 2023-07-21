@@ -17,3 +17,4 @@ char * read_data_instruction(char * ptr_in_line, data_instruction * inst, int li
 void read_data(char * ptr_in_line, int line_index, plist data_image);
 void read_string(char * ptr_in_line, int line_index, plist data_image);
 void read_externals(char * ptr_in_line, ptable symbols_table, int line_index);
+void read_entries(char * ptr_in_line, plist entries, int line_index);

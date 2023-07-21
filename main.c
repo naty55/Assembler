@@ -10,6 +10,7 @@ int main(int argc, char const *argv[]) {
     char b = a;
     printf("Value: a: %d b: %d,\n", a, b);
     */
+   
     char file_as[] = "test.as";
     char file_am[] = "test.am";
     FILE * i_file = fopen(file_as, "r");
@@ -18,7 +19,7 @@ int main(int argc, char const *argv[]) {
     fclose(i_file);
     fclose(s_file);
     s_file = fopen(file_am, "r");
-    assemble(s_file);
+    assemble(s_file, "test");
     fclose(s_file);
     return 0;
 }

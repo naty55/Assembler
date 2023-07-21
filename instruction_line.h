@@ -2,6 +2,7 @@
 typedef struct InstructionLine *i_line; 
 
 i_line create_iline();
+unsigned short i_line_get_data(i_line line);
 void set_source_address_type(i_line i, address_type a_type);
 void set_target_address_type(i_line i, address_type a_type);
 void set_encoding(i_line i, encoding e);

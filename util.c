@@ -43,7 +43,7 @@ Bool string_to_number(char *str, int * number) {
     } else if(*str == '+') {
         str++;
     }
-    
+
     hasDigits = False;
     while (*str >= '0' && *str <= '9') {
         hasDigits = True;
@@ -56,18 +56,33 @@ Bool string_to_number(char *str, int * number) {
 }
 
 char * duplicate_string(char * str){
-    
     size_t length = strlen(str);
     char* duplicate = (char*)malloc((length + 1) * sizeof(char));
     strcpy(duplicate, str);
     return duplicate;
 }
 
+char * concat(char * str1, char * str2) {
+    size_t length = strlen(str1) + strlen(str2);
+    char* duplicate = (char*)malloc((length + 1) * sizeof(char));
+    strcpy(duplicate, str1);
+    strcat(duplicate, str2);
+    return duplicate;
+}
 
 void set_all_null(void ** data, int size) {
     int i = 0;
     for (; i < size; i++) {
         *data = NULL;
         data++;
+    }
+}
+
+void convertToBase64(unsigned short value, char data[2]) {
+    const char base64Table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    int i;
+    for (i = 0; i < 2; i++) {
+        unsigned short chunk = (value >> ((1- i)  * 6)) & 0x3F;
+        data[i] = base64Table[chunk];
     }
 }

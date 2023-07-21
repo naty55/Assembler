@@ -3,25 +3,18 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-const char base64Table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-void convertToBase64(unsigned short value) {
-    char base64Result[2];
-    int i;
-    for (i = 0; i < 2; i++) {
-        unsigned short chunk = (value >> ((1- i)  * 6)) & 0x3F;
-        base64Result[i] = base64Table[chunk];
-    }
-    printf("Base64 encoding: %s\n", base64Result);
-}
-
 struct InstructionLine {
     unsigned short data;
+    unsigned long binary_line_index;
 };
 i_line create_iline() {
     i_line il = malloc(sizeof(struct InstructionLine));
     il->data = 0;
     return il;
+}
+
+unsigned short i_line_get_data(i_line line) {
+    return line->data;
 }
 
 void set_target_address_type(i_line i, address_type a_type) {
@@ -74,9 +67,8 @@ void print_i_line(i_line i) {
         return;
     }
     printBinary(i->data);
-    convertToBase64(i->data);
 }
 
 void print_iline_in_base64(i_line i) {
-    convertToBase64(i->data);
+    /*convertToBase64(i->data);*/
 }

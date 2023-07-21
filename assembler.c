@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "list.h"
+#include "output.h"
 #include "hashmap.h"
 #include "instruction_line.h"
 #include "constants.h"
@@ -11,31 +12,32 @@
 
 void handle_operation(char * ptr_in_line, int line_index, plist instruciton_image, ptable symbols_table, ptable missing_symbols);
 void fill_missing_labels_addresses(ptable missing_symbols, ptable symbols_table, unsigned int instruction_image_size);
-void build_image(FILE * source_file, plist instruction_image, plist data_image, ptable symbols_table, ptable missing_symbols);
+void build_image(FILE * source_file, plist instruction_image, plist data_image, ptable symbols_table, ptable missing_symbols, plist entries);
 char * get_next_param(char *ptr_in_line, clist param, Bool *read_param, int line_index);
 void handle_param(clist param, int param_data, address_type param_type, i_line line, Bool is_target, ptable missing_symbols);
-void handle_data(char * ptr_in_line, int line_index, plist data_image, ptable symbols_table, symbol sym);
+void handle_data(char * ptr_in_line, int line_index, plist data_image, ptable symbols_table, symbol sym, plist entries);
 void print_image(plist instruction_image, plist data_image);
 
-void assemble(FILE * source_file) {
+void assemble(FILE * source_file, char * filename) {
     plist instruction_image = create_plist();
     plist data_image = create_plist();
     ptable symbols_table = create_ptable();
     ptable missing_symbols = create_ptable();
-    ptable entries = create_ptable();
-    ptable externals = create_ptable();
-    build_image(source_file, instruction_image, data_image, symbols_table, missing_symbols);
+    plist entries = create_plist();
+    plist externals = create_plist();
+    build_image(source_file, instruction_image, data_image, symbols_table, missing_symbols, entries);
     fill_missing_labels_addresses(missing_symbols, symbols_table, get_plist_length(instruction_image));
     print_image(instruction_image, data_image);
+    write_result_files(instruction_image, data_image, symbols_table, externals, entries, filename);
     free_plist(instruction_image);
     free_plist(data_image);
     free_ptable(symbols_table);
     free_ptable(missing_symbols);
-    free_ptable(entries);
-    free_ptable(externals);
+    free_plist(entries);
+    free_plist(externals);
 }
 
-void build_image(FILE * source_file, plist instruction_image, plist data_image, ptable symbols_table, ptable missing_symbols) {
+void build_image(FILE * source_file, plist instruction_image, plist data_image, ptable symbols_table, ptable missing_symbols, plist entries) {
     char line[MAX_LINE_SIZE];
     char *ptr_in_line;
     int line_index = 0;
@@ -48,7 +50,7 @@ void build_image(FILE * source_file, plist instruction_image, plist data_image, 
             continue;
         }
         if(is_line_data_instruction(ptr_in_line)) {
-            handle_data(ptr_in_line, line_index, data_image, symbols_table, sym);
+            handle_data(ptr_in_line, line_index, data_image, symbols_table, sym, entries);
         } else {
             handle_operation(ptr_in_line, line_index, instruction_image, symbols_table, missing_symbols);
         }
@@ -56,7 +58,7 @@ void build_image(FILE * source_file, plist instruction_image, plist data_image, 
     }
 }
 
-void handle_data(char * ptr_in_line, int line_index, plist data_image, ptable symbols_table, symbol sym) {
+void handle_data(char * ptr_in_line, int line_index, plist data_image, ptable symbols_table, symbol sym, plist entries) {
     data_instruction inst;
     ptr_in_line = read_data_instruction(ptr_in_line, &inst, line_index);
 
@@ -81,6 +83,7 @@ void handle_data(char * ptr_in_line, int line_index, plist data_image, ptable sy
         read_externals(ptr_in_line, symbols_table, line_index);
         break;
     case ENTRY:
+        read_entries(ptr_in_line, entries, line_index);
         break;
     }
 }
@@ -194,6 +197,7 @@ void fill_missing_labels_addresses(ptable missing_symbols, ptable symbols_table,
                 Bool is_data = symbol_is_data(sym);
                 if(is_data) {
                     sym_address += instruction_image_size + IMAGE_OFFSET_SIZE;
+                    symbol_set_offset(sym, sym_address);
                 }
                 set_encoding(line, sym_encoding);
                 set_label_address(line, sym_address);

@@ -275,7 +275,7 @@ void read_externals(char * ptr_in_line, ptable symbols_table, int line_index) {
         if(read_param) {
             param_counter++;
             param_str = list_to_string(param);
-            printf("Found external %d: '%s'\n", param_counter, list_to_string(param));
+            printf("Found external %d: '%s'\n", param_counter, param_str);
             if(is_param_label(param)) {
                 if(ptable_get(symbols_table, param_str) == NULL) {
                     symbol sym = create_symbol();
@@ -286,6 +286,51 @@ void read_externals(char * ptr_in_line, ptable symbols_table, int line_index) {
                 } else {
                     PRINT_ERROR_WITH_INDEX("already defined symbol", line_index);
                 }
+            } else {
+                PRINT_ERROR_WITH_INDEX("Not a valid symbol name", line_index);
+            }
+            
+        } else {
+            if(param_counter == 0){
+                PRINT_ERROR_WITH_INDEX("No symbols after .extern instruction", line_index);
+                free_clist(param);
+                return;
+            } else {
+                if(*ptr_in_line == ',') {
+                    PRINT_ERROR_WITH_INDEX("Extra comma after symbols", line_index);
+                    free_clist(param);
+                    return;
+                }
+            }    
+        }
+        if(*ptr_in_line == ',') {
+            ptr_in_line++;
+        } else if(*ptr_in_line != '\0'){ 
+            PRINT_ERROR_WITH_INDEX("Missing comma between params", line_index);
+            free_clist(param);
+            return;
+        }
+    } while (*ptr_in_line != '\0');
+
+}
+
+void read_entries(char * ptr_in_line, plist entries, int line_index) {
+    clist param = create_clist();
+    char * param_str;
+    Bool read_param = False;
+    int param_counter = 0;
+    do {
+        clear_clist(param);
+        ptr_in_line = read_next_param(ptr_in_line, param, &read_param);
+        ptr_in_line = skip_spaces(ptr_in_line);
+        if(read_param) {
+            param_counter++;
+            param_str = list_to_string(param);
+            printf("Found entry %d: '%s'\n", param_counter, param_str);
+            if(is_param_label(param)) {
+                plist_append(entries, param_str);
+            } else {
+                PRINT_ERROR_WITH_INDEX("Not a valid symbol name", line_index); 
             }
             
         } else {
