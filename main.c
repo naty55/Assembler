@@ -30,7 +30,7 @@ void start(int argc, char *argv[]) {
         fclose(i_file);
         fclose(s_file);
         s_file = fopen(am_filename, "r");
-        assemble(s_file, "test");
+        assemble(s_file, argv[argc]);
         fclose(s_file);
         free(as_filename);
         free(am_filename);
