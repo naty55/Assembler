@@ -14,7 +14,6 @@ int remove_macros(FILE *input_file, FILE* source_file) {
     clist macro_content;
     ptable macrosTable = create_ptable();
     while(fgets(line, MAX_LINE_SIZE, input_file) != NULL) {
-        /*printf("%d\t: %s", i++, line);*/
         if(!is_clist_empty(macro_name)) {
             ptr_in_line = skip_spaces(line);
             if(strncmp(ENDMACRO, ptr_in_line, 7) == 0) {
@@ -46,8 +45,7 @@ int remove_macros(FILE *input_file, FILE* source_file) {
             }
         }
     }
-    /*printf("\n");*/
-    free_ptable(macrosTable);
+    free_ptable(macrosTable, free);
     free_clist(macro_name);
     return 0;
 }

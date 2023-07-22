@@ -6,9 +6,11 @@ typedef enum {
     True = 1
 } Bool;
 
+typedef void (*freeFunction)(void *);
+
+
 char * skip_spaces(char * str);
 Bool is_str_empty(char * str);
-void printBinary(unsigned short value);
 Bool string_to_number(char *str, int * number);
 char * duplicate_string(char * str);
 char * concat(char * str1, char * str2);

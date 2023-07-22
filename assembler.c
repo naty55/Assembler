@@ -29,8 +29,8 @@ void assemble(FILE * source_file, char * filename) {
     write_result_files(instruction_image, data_image, symbols_table, missing_symbols, externals, entries, filename);
     free_plist(instruction_image);
     free_plist(data_image);
-    free_ptable(symbols_table);
-    free_ptable(missing_symbols);
+    free_ptable(symbols_table, free);
+    free_ptable(missing_symbols, (freeFunction)free_plist);
     free_plist(entries);
     free_plist(externals);
 }
@@ -137,9 +137,6 @@ void handle_operation(char * ptr_in_line, int line_index, plist instruciton_imag
         }
     }
 
-    print_i_line(first_line);
-    print_i_line(second_line);
-    print_i_line(third_line);
     check_for_extra_text(ptr_in_line, line_index);
     plist_append(instruciton_image, first_line);
     plist_append_if_not_null(instruciton_image, second_line);
@@ -177,9 +174,6 @@ void handle_param(clist param, int param_data, address_type param_type, i_line l
 void fill_missing_labels_addresses(ptable missing_symbols, ptable symbols_table, unsigned int instruction_image_size) {
     int i = 0;
     plist keys = ptable_get_keys(missing_symbols);
-    printf("========================\n");
-    printf("======SECOND PASS=======\n");
-    printf("========================\n");
     for (; i < get_plist_length(keys); i++) {
         char * symbol_name = get_pointer_from_list(keys, i);
         symbol sym = ptable_get(symbols_table, symbol_name);
@@ -200,7 +194,6 @@ void fill_missing_labels_addresses(ptable missing_symbols, ptable symbols_table,
                 set_encoding(line, sym_encoding);
                 set_label_address(line, sym_address);
                 printf("Setting label address label: '%s' address: %u\n", symbol_name, sym_address);
-                print_i_line(line);
             }
             
         }

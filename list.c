@@ -115,59 +115,14 @@ void* get_pointer_from_list(plist l, int i) {
 unsigned long get_plist_length(plist l) {
     return l->length;
 }
-plist clear_plist(plist l) {
-    int i;
-    for (i = 0; i < l->length; i++) {
-        free(l->data[i]);
-    }
-    l->length=0;
-    return l;
-}
+
 Bool is_plist_empty(plist l) {
     return (Bool)(l->length == 0);
 }
 void free_plist(plist l) {
-    clear_plist(l);
-    free(l);
-}
-
-
-struct UnsignedIntegerList {
-    unsigned int * data;
-    unsigned long length;
-    unsigned long size;
-};
-
-ilist create_ilist() {
-    ilist list = malloc(sizeof(struct UnsignedIntegerList));
-    list->data= malloc(1);
-    list->size = 1; 
-    list->length = 0;
-    return list;
-}
-unsigned int ilist_append(ilist l, unsigned int integer) {
-    if (l->size == l->length) 
-    {
-        l->data = realloc(l->data, 2 * l->size * sizeof(char));
-        l->size = 2 * l->size;
+    int i;
+    for (i = 0; i < l->length; i++) {
+        free(l->data[i]);
     }
-    l->data[l->length++] = integer;
-    return integer;
-}
-unsigned int ilist_get(ilist l, int i) {
-    return (l->data)[i];
-}
-unsigned long ilist_get_length(ilist l) {
-    return l->length;
-}
-ilist ilist_clear(ilist l) {
-    l->length = 0;
-    return l;
-}
-Bool ilist_is_empty(ilist l) {
-    return (Bool)(l->length == 0);
-}
-void ilist_free(ilist l) {
-    free(l->data);
-    free(l);   
+    free(l);
 }

@@ -58,14 +58,14 @@ plist ptable_get_keys(ptable table) {
     return keys;
 }
 
-void free_ptable(ptable table) {
+void free_ptable(ptable table, freeFunction free_function) {
     int i=0;
     for (;i < TABLE_SIZE; i++) {
         node * next;
         node * ptr = table->data[i];
         while (ptr != NULL) {
             next = ptr->next;
-            free(ptr->data);
+            free_function(ptr->data);
             free(ptr->key);
             free(ptr);
             ptr = next;

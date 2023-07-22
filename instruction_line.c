@@ -69,15 +69,3 @@ void set_data(i_line i, short data) {
 void set_operation(i_line i, operation op) {
     i->data = (i->data & 0xF1E) | (op << 5);
 }
-
-void print_i_line(i_line i) {
-    if(i == NULL) {
-        printf("NULL\n");
-        return;
-    }
-    printBinary(i->data);
-}
-
-void print_iline_in_base64(i_line i) {
-    /*convertToBase64(i->data);*/
-}

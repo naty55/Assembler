@@ -9,7 +9,7 @@ ptable create_ptable();
 ptable ptable_insert(ptable table, char *key, void* ptr);
 void* ptable_get(ptable table, char *key);
 plist ptable_get_keys(ptable table);
-void free_ptable(ptable table);
+void free_ptable(ptable table, freeFunction free_function);
 unsigned int hashFunction(const char* key);
 
 #endif

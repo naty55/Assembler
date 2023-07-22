@@ -312,6 +312,7 @@ void read_externals(char * ptr_in_line, ptable symbols_table, int line_index, pl
             return;
         }
     } while (*ptr_in_line != '\0');
+    free_clist(param);
 
 }
 
@@ -355,5 +356,6 @@ void read_entries(char * ptr_in_line, plist entries, int line_index) {
             return;
         }
     } while (*ptr_in_line != '\0');
+    free_clist(param);
 
 }
