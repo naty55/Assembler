@@ -196,7 +196,7 @@ void read_data(char * ptr_in_line, int line_index, plist data_image) {
             printf("Param number %d: '%s'\n", param_counter, param_str);
             param_counter++;
             if(string_to_number(param_str, &param_data)) {
-                i_line data_line = create_iline();
+                i_line data_line = create_iline(get_plist_length(data_image));
                 set_data_full(data_line, param_data);
                 plist_append(data_image, data_line);
             } else {
@@ -240,7 +240,7 @@ void read_string(char * ptr_in_line, int line_index, plist data_image) {
     }
     ptr_in_line++;
     while (*ptr_in_line != '\0' && *ptr_in_line != '"') {
-        i_line data_line = create_iline();
+        i_line data_line = create_iline(get_plist_length(data_image));
         set_char(data_line, *ptr_in_line);
         append_char(str, *ptr_in_line);
         plist_append(data_image, data_line);
@@ -258,12 +258,12 @@ void read_string(char * ptr_in_line, int line_index, plist data_image) {
         return;
     }
     printf("Found string: '%s'\n", list_to_string(str));
-    i_line data = create_iline();
+    i_line data = create_iline(get_plist_length(data_image));
     plist_append(data_image, data);
     free_clist(str);
 }
 
-void read_externals(char * ptr_in_line, ptable symbols_table, int line_index) {
+void read_externals(char * ptr_in_line, ptable symbols_table, int line_index, plist externals) {
     clist param = create_clist();
     char * param_str;
     Bool read_param = False;
@@ -283,6 +283,7 @@ void read_externals(char * ptr_in_line, ptable symbols_table, int line_index) {
                     symbol_set_is_data(sym, False);
                     symbol_set_encoding(sym, E);
                     ptable_insert(symbols_table, param_str, sym);
+                    plist_append(externals, param_str);
                 } else {
                     PRINT_ERROR_WITH_INDEX("already defined symbol", line_index);
                 }

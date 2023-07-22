@@ -7,16 +7,42 @@
 #include "hashmap.h"
 #include "symbol.h"
 
-Bool write_ext(plist externals, ptable symbols_table, char *filename) {
+Bool write_ext(plist externals, ptable missing_symbols, char *filename) {
+    int i,j;
+    char * ext_filename;
+    FILE * ext_file;
+    if(get_plist_length(externals) == 0) {
+        return True;
+    }
+
+    ext_filename = concat(filename, ".ext");
+    ext_file = fopen(ext_filename, "w");
+    
+    for (i = 0; i < get_plist_length(externals); i++) {
+        char * label = get_pointer_from_list(externals, i);
+        plist lines = ptable_get(missing_symbols, label);
+        for (j = 0; j < get_plist_length(lines); j++) {
+            i_line line = get_pointer_from_list(lines, j);
+            fprintf(ext_file, "%s\t%ld\n", label, i_line_get_binary_line_index(line));
+        }
+        
+    }
+    fclose(ext_file);
+    free(ext_filename);
     return True;
 }
 Bool write_ent(plist entries, ptable symbols_table, char *filename) {
+    int i;
+    char * ent_filename;
+    FILE * ent_file;
+
     if(get_plist_length(entries) == 0) {
         return True;
     }
-    int i = 0;
-    char * ent_filename = concat(filename, ".ent");
-    FILE * ent_file = fopen(ent_filename, "w");
+
+    i = 0;
+    ent_filename = concat(filename, ".ent");
+    ent_file = fopen(ent_filename, "w");
     
     for (;i < get_plist_length(entries); i++) {
         char * label = get_pointer_from_list(entries, i);
@@ -45,8 +71,8 @@ Bool write_obj(plist inst_iamge, plist data_image, char *filename) {
     fclose(obj_file);
     return True;
 }
-Bool write_result_files(plist inst_image, plist data_image, ptable symbols_table, plist externals, plist entries, char * filename) {
-    return write_ext(externals, symbols_table, filename) && 
+Bool write_result_files(plist inst_image, plist data_image, ptable symbols_table, ptable missing_symbols, plist externals, plist entries, char * filename) {
+    return write_ext(externals, missing_symbols, filename) && 
            write_ent(entries, symbols_table, filename) && 
            write_obj(inst_image, data_image, filename);
 }

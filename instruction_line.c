@@ -7,14 +7,23 @@ struct InstructionLine {
     unsigned short data;
     unsigned long binary_line_index;
 };
-i_line create_iline() {
+i_line create_iline(unsigned long binaty_line_index) {
     i_line il = malloc(sizeof(struct InstructionLine));
     il->data = 0;
+    il->binary_line_index = binaty_line_index;
     return il;
 }
 
 unsigned short i_line_get_data(i_line line) {
     return line->data;
+}
+
+unsigned long i_line_get_binary_line_index(i_line l) {
+    return l->binary_line_index;
+}
+
+void i_line_set_binary_line_index(i_line l, unsigned long binary_line_index) {
+    l->binary_line_index = binary_line_index;
 }
 
 void set_target_address_type(i_line i, address_type a_type) {

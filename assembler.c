@@ -12,10 +12,10 @@
 
 void handle_operation(char * ptr_in_line, int line_index, plist instruciton_image, ptable symbols_table, ptable missing_symbols);
 void fill_missing_labels_addresses(ptable missing_symbols, ptable symbols_table, unsigned int instruction_image_size);
-void build_image(FILE * source_file, plist instruction_image, plist data_image, ptable symbols_table, ptable missing_symbols, plist entries);
+void build_image(FILE * source_file, plist instruction_image, plist data_image, ptable symbols_table, ptable missing_symbols, plist entries, plist externals);
 char * get_next_param(char *ptr_in_line, clist param, Bool *read_param, int line_index);
 void handle_param(clist param, int param_data, address_type param_type, i_line line, Bool is_target, ptable missing_symbols);
-void handle_data(char * ptr_in_line, int line_index, plist data_image, ptable symbols_table, symbol sym, plist entries);
+void handle_data(char * ptr_in_line, int line_index, plist data_image, ptable symbols_table, symbol sym, plist entries, plist externals);
 
 void assemble(FILE * source_file, char * filename) {
     plist instruction_image = create_plist();
@@ -24,9 +24,9 @@ void assemble(FILE * source_file, char * filename) {
     ptable missing_symbols = create_ptable();
     plist entries = create_plist();
     plist externals = create_plist();
-    build_image(source_file, instruction_image, data_image, symbols_table, missing_symbols, entries);
+    build_image(source_file, instruction_image, data_image, symbols_table, missing_symbols, entries, externals);
     fill_missing_labels_addresses(missing_symbols, symbols_table, get_plist_length(instruction_image));
-    write_result_files(instruction_image, data_image, symbols_table, externals, entries, filename);
+    write_result_files(instruction_image, data_image, symbols_table, missing_symbols, externals, entries, filename);
     free_plist(instruction_image);
     free_plist(data_image);
     free_ptable(symbols_table);
@@ -35,7 +35,7 @@ void assemble(FILE * source_file, char * filename) {
     free_plist(externals);
 }
 
-void build_image(FILE * source_file, plist instruction_image, plist data_image, ptable symbols_table, ptable missing_symbols, plist entries) {
+void build_image(FILE * source_file, plist instruction_image, plist data_image, ptable symbols_table, ptable missing_symbols, plist entries, plist externals) {
     char line[MAX_LINE_SIZE];
     char *ptr_in_line;
     int line_index = 0;
@@ -48,7 +48,7 @@ void build_image(FILE * source_file, plist instruction_image, plist data_image, 
             continue;
         }
         if(is_line_data_instruction(ptr_in_line)) {
-            handle_data(ptr_in_line, line_index, data_image, symbols_table, sym, entries);
+            handle_data(ptr_in_line, line_index, data_image, symbols_table, sym, entries, externals);
         } else {
             handle_operation(ptr_in_line, line_index, instruction_image, symbols_table, missing_symbols);
         }
@@ -56,7 +56,7 @@ void build_image(FILE * source_file, plist instruction_image, plist data_image, 
     }
 }
 
-void handle_data(char * ptr_in_line, int line_index, plist data_image, ptable symbols_table, symbol sym, plist entries) {
+void handle_data(char * ptr_in_line, int line_index, plist data_image, ptable symbols_table, symbol sym, plist entries, plist externals) {
     data_instruction inst;
     ptr_in_line = read_data_instruction(ptr_in_line, &inst, line_index);
 
@@ -78,7 +78,7 @@ void handle_data(char * ptr_in_line, int line_index, plist data_image, ptable sy
         read_data(ptr_in_line, line_index, data_image);
         break;
     case EXTERN:
-        read_externals(ptr_in_line, symbols_table, line_index);
+        read_externals(ptr_in_line, symbols_table, line_index, externals);
         break;
     case ENTRY:
         read_entries(ptr_in_line, entries, line_index);
@@ -87,7 +87,7 @@ void handle_data(char * ptr_in_line, int line_index, plist data_image, ptable sy
 }
 
 void handle_operation(char * ptr_in_line, int line_index, plist instruciton_image, ptable symbols_table, ptable missing_symbols) {
-    i_line first_line = create_iline();
+    i_line first_line = create_iline(get_plist_length(instruciton_image) + IMAGE_OFFSET_SIZE);
     i_line second_line = NULL;
     i_line third_line = NULL;
     operation op;
@@ -118,7 +118,7 @@ void handle_operation(char * ptr_in_line, int line_index, plist instruciton_imag
 
     if(expected_params_to_read == 1) {
         set_target_address_type(first_line, param1_type);
-        second_line = create_iline();
+        second_line = create_iline(get_plist_length(instruciton_image) + 1 + IMAGE_OFFSET_SIZE);
         handle_param(param1, param1_data, param1_type, second_line, True, missing_symbols);
     
     }
@@ -126,12 +126,12 @@ void handle_operation(char * ptr_in_line, int line_index, plist instruciton_imag
         set_source_address_type(first_line, param1_type);
         set_target_address_type(first_line, param2_type);
         if(param1_type == param2_type && param1_type == IMM_REG_ADDR) {
-            second_line = create_iline();
+            second_line = create_iline(get_plist_length(instruciton_image) + 1 + IMAGE_OFFSET_SIZE);
             handle_param(param1, param1_data, param1_type, second_line, False, missing_symbols);
             handle_param(param2, param2_data, param2_type, second_line, True, missing_symbols);
         } else {
-            second_line = create_iline();
-            third_line = create_iline();
+            second_line = create_iline(get_plist_length(instruciton_image) + 1 + IMAGE_OFFSET_SIZE);
+            third_line  = create_iline(get_plist_length(instruciton_image) + 2 + IMAGE_OFFSET_SIZE);
             handle_param(param1, param1_data, param1_type, second_line, False, missing_symbols);
             handle_param(param2, param2_data, param2_type, third_line, True, missing_symbols);
         }

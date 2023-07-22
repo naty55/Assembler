@@ -1,8 +1,10 @@
 #include "constants.h"
 typedef struct InstructionLine *i_line; 
 
-i_line create_iline();
+i_line create_iline(unsigned long binaty_line_index);
 unsigned short i_line_get_data(i_line line);
+unsigned long i_line_get_binary_line_index(i_line l);
+void i_line_set_binary_line_index(i_line l, unsigned long binary_line_index);
 void set_source_address_type(i_line i, address_type a_type);
 void set_target_address_type(i_line i, address_type a_type);
 void set_encoding(i_line i, encoding e);
