@@ -109,7 +109,6 @@ void handle_operation(char * ptr_in_line, int line_index, plist instruciton_imag
 
     ptr_in_line = read_operation(ptr_in_line, &op, line_index, error);
     ptr_in_line = skip_spaces(ptr_in_line);
-    set_operation(first_line, op);
     expected_params_to_read = get_params_to_read(op);
     if(0 < expected_params_to_read) {
         ptr_in_line = read_next_param(ptr_in_line, param1, &read_param);
@@ -118,7 +117,7 @@ void handle_operation(char * ptr_in_line, int line_index, plist instruciton_imag
     }
 
     if(1 < expected_params_to_read) {
-        ptr_in_line =  get_next_param(ptr_in_line, param2, &read_param, line_index, error);
+        ptr_in_line = get_next_param(ptr_in_line, param2, &read_param, line_index, error);
         printf("Param 2: '%s'\n", list_to_string(param2));
         param2_type = validate_param(param2, &param2_data, line_index, symbols_table, error);
     }
@@ -126,13 +125,14 @@ void handle_operation(char * ptr_in_line, int line_index, plist instruciton_imag
     check_for_extra_text(ptr_in_line, line_index, error);
     IF_ERROR_RETURN();
     
+    set_operation(first_line, op);
     if(expected_params_to_read == 1) {
         if(!validate_op_and_target_param(op, param1_type)) {
             HANDLE_ERROR("incorrect param type", line_index);
         }
         set_target_address_type(first_line, param1_type);
         second_line = create_iline(get_plist_length(instruciton_image) + 1 + IMAGE_OFFSET_SIZE);
-        handle_param(param1, param1_data, param1_type, second_line, True, missing_symbols);
+        handle_param(param1, param1_data, param1_type, second_line, True, missing_symbols, line_index);
     
     }
     if(expected_params_to_read == 2) {
@@ -146,13 +146,13 @@ void handle_operation(char * ptr_in_line, int line_index, plist instruciton_imag
         set_target_address_type(first_line, param2_type);
         if(param1_type == param2_type && param1_type == IMM_REG_ADDR) {
             second_line = create_iline(get_plist_length(instruciton_image) + 1 + IMAGE_OFFSET_SIZE);
-            handle_param(param1, param1_data, param1_type, second_line, False, missing_symbols);
-            handle_param(param2, param2_data, param2_type, second_line, True, missing_symbols);
+            handle_param(param1, param1_data, param1_type, second_line, False, missing_symbols, line_index);
+            handle_param(param2, param2_data, param2_type, second_line, True, missing_symbols, line_index);
         } else {
             second_line = create_iline(get_plist_length(instruciton_image) + 1 + IMAGE_OFFSET_SIZE);
             third_line  = create_iline(get_plist_length(instruciton_image) + 2 + IMAGE_OFFSET_SIZE);
-            handle_param(param1, param1_data, param1_type, second_line, False, missing_symbols);
-            handle_param(param2, param2_data, param2_type, third_line, True, missing_symbols);
+            handle_param(param1, param1_data, param1_type, second_line, False, missing_symbols, line_index);
+            handle_param(param2, param2_data, param2_type, third_line, True, missing_symbols, line_index);
         }
     }
 
@@ -162,7 +162,7 @@ void handle_operation(char * ptr_in_line, int line_index, plist instruciton_imag
 
 }
 
-void handle_param(clist param, int param_data, address_type param_type, i_line line, Bool is_target, ptable missing_symbols) {
+void handle_param(clist param, int param_data, address_type param_type, i_line line, Bool is_target, ptable missing_symbols, int line_index) {
     switch (param_type)
     {
     case IMM_REG_ADDR:
@@ -184,17 +184,21 @@ void handle_param(clist param, int param_data, address_type param_type, i_line l
     }
         break;
     case ABS_ADDR:
+        if(param_data < -512 || 511 < param_data) {
+            WARN("data overflow, will set data to 0", line_index);
+        }
         set_data(line, param_data);
         break;
     }
 
 }
 void fill_missing_labels_addresses(ptable missing_symbols, ptable symbols_table, unsigned int instruction_image_size, Bool *error) {
-    int i = 0;
+    int i;
+    plist keys;
     IF_ERROR_RETURN();
 
-    plist keys = ptable_get_keys(missing_symbols);
-    for (; i < get_plist_length(keys); i++) {
+    keys = ptable_get_keys(missing_symbols);
+    for (i = 0; i < get_plist_length(keys); i++) {
         char * symbol_name = get_pointer_from_list(keys, i);
         symbol sym = ptable_get(symbols_table, symbol_name);
         if(sym == NULL) {
@@ -242,6 +246,6 @@ void free_objects(plist instruction_image, plist data_image, ptable symbols_tabl
     free_ptable(symbols_table, free);
     free_plist(entries);
     free_plist(externals);
-    /*free_ptable(missing_symbols, (freeFunction)free_plist);*/
+    free_ptable(missing_symbols, free);
 
 }

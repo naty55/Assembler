@@ -58,7 +58,7 @@ char * read_operation(char * ptr_in_line, operation * op, int line_index, Bool *
         HANDLE_ERROR("unkonwn operation", line_index);
     }
     ptr_in_line += 3;
-    if(!isspace(*ptr_in_line)) {
+    if(!isspace(*ptr_in_line) && *ptr_in_line != '\n' && *ptr_in_line != '\0') {
         HANDLE_ERROR("unknown operation", line_index);
     }
     return ptr_in_line;
@@ -95,10 +95,11 @@ char * get_next_param(char *ptr_in_line, clist param, Bool *read_param, int line
     clear_clist(param);
     *read_param = False;
     ptr_in_line = skip_spaces(ptr_in_line);
-    if(*ptr_in_line++ != ',') {
+    if(*ptr_in_line != ',') {
         HANDLE_ERROR("Missing comma between params", line_index);
         return ptr_in_line;
     }
+    ptr_in_line++;
     return read_next_param(ptr_in_line, param, read_param);
 }
 
@@ -114,7 +115,6 @@ char * read_next_param(char * ptr_in_line, clist param, Bool *read_param) {
 void check_for_extra_text(char *ptr_in_line, int line_index, Bool *error) {
     if(!is_str_empty(ptr_in_line)) {
         HANDLE_ERROR("Unidentified text after end of line", line_index);
-            return;
     }
 }
 
@@ -198,6 +198,11 @@ void read_data(char * ptr_in_line, int line_index, plist data_image, Bool *error
             param_counter++;
             if(string_to_number(param_str, &param_data)) {
                 i_line data_line = create_iline(get_plist_length(data_image));
+
+                if(param_data < -2048 || 2047 < param_data) {
+                    param_data = 0;
+                    WARN("data overflow, will set data to 0", line_index);
+                }
                 set_data_full(data_line, param_data);
                 plist_append(data_image, data_line);
             } else {
@@ -269,7 +274,8 @@ void read_externals(char * ptr_in_line, ptable symbols_table, int line_index, pl
             param_str = list_to_string(param);
             printf("Found external %d: '%s'\n", param_counter, param_str);
             if(is_param_label(param)) {
-                if(ptable_get(symbols_table, param_str) == NULL) {
+                symbol sym = ptable_get(symbols_table, param_str);
+                if(sym == NULL) {
                     symbol sym = create_symbol();
                     symbol_set_offset(sym, 0);
                     symbol_set_is_data(sym, False);
@@ -277,7 +283,11 @@ void read_externals(char * ptr_in_line, ptable symbols_table, int line_index, pl
                     ptable_insert(symbols_table, param_str, sym);
                     plist_append(externals, param_str);
                 } else {
-                    HANDLE_ERROR("already defined symbol", line_index);
+                    if(symbol_get_encoding(sym) == E) {
+                        WARN("external is already defined twice", line_index);
+                    } else {
+                        HANDLE_ERROR("already defined symbol", line_index);
+                    }
                 }
             } else {
                 HANDLE_ERROR("Not a valid symbol name", line_index);

@@ -23,6 +23,9 @@ Bool write_ext(plist externals, ptable missing_symbols, char *filename) {
     for (i = 0; i < get_plist_length(externals); i++) {
         char * label = get_pointer_from_list(externals, i);
         plist lines = ptable_get(missing_symbols, label);
+        if(lines == NULL) {
+            continue;
+        }
         for (j = 0; j < get_plist_length(lines); j++) {
             i_line line = get_pointer_from_list(lines, j);
             fprintf(ext_file, "%s\t%ld\n", label, i_line_get_binary_line_index(line));
