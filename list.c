@@ -11,8 +11,8 @@ struct CharList {
 };
 
 clist create_clist() {
-    clist list = malloc(sizeof(struct CharList));
-    list->data= malloc(1);
+    clist list = malloc_safe(sizeof(struct CharList));
+    list->data= malloc_safe(1);
     list->size = 1; 
     list->length = 0;
     return list;
@@ -61,7 +61,7 @@ unsigned long get_length(clist l) {
 }
 
 char * list_to_string(clist l) {
-    char * str = malloc((l->length + 1) * sizeof(char));
+    char * str = malloc_safe((l->length + 1) * sizeof(char));
     strncpy(str, l->data, l->length);
     str[l->length] = '\0';
     return str;
@@ -86,8 +86,8 @@ struct PointerList {
     unsigned long size;
 };
 plist create_plist() {
-    plist list = malloc(sizeof(struct PointerList));
-    list->data= malloc(sizeof(void *));
+    plist list = malloc_safe(sizeof(struct PointerList));
+    list->data= malloc_safe(sizeof(void *));
     list->size = 1; 
     list->length = 0;
     return list;

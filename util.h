@@ -1,5 +1,6 @@
 #ifndef __UTIL_H
 #define __UTIL_H
+#include <stdlib.h>
 
 typedef enum {
     False = 0,
@@ -16,4 +17,5 @@ char * duplicate_string(char * str);
 char * concat(char * str1, char * str2);
 void set_all_null(void ** data, int size);
 void convertToBase64(unsigned short value, char data[2]);
+void * malloc_safe(size_t size);
 #endif

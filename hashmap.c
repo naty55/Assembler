@@ -16,14 +16,14 @@ struct StringPointerTable {
 };
 
 ptable create_ptable() {
-    ptable table = malloc(sizeof(struct StringPointerTable));
+    ptable table = malloc_safe(sizeof(struct StringPointerTable));
     set_all_null((void**)table->data, TABLE_SIZE);
     return table;
 }
 
 ptable ptable_insert(ptable table, char *key, void* ptr) {
     unsigned int hash = hashFunction(key);
-    node * newNode = malloc(sizeof(node));
+    node * newNode = malloc_safe(sizeof(node));
     newNode->data = ptr;
     newNode->key = duplicate_string(key);
     newNode->next = table->data[hash];

@@ -10,7 +10,7 @@ struct Symbol {
 };
 
 symbol create_symbol() {
-    symbol sym = malloc(sizeof(struct Symbol));
+    symbol sym = malloc_safe(sizeof(struct Symbol));
     return sym;
 }
 

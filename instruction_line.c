@@ -8,7 +8,7 @@ struct InstructionLine {
     unsigned long binary_line_index;
 };
 i_line create_iline(unsigned long binaty_line_index) {
-    i_line il = malloc(sizeof(struct InstructionLine));
+    i_line il = malloc_safe(sizeof(struct InstructionLine));
     il->data = 0;
     il->binary_line_index = binaty_line_index;
     return il;

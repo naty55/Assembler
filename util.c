@@ -3,6 +3,7 @@
 #include "util.h"
 #include <stdlib.h>
 #include <string.h>
+#include "error.h"
 
 
 
@@ -39,14 +40,14 @@ Bool string_to_number(char *str, int * number) {
 
 char * duplicate_string(char * str){
     size_t length = strlen(str);
-    char* duplicate = (char*)malloc((length + 1) * sizeof(char));
+    char* duplicate = (char*)malloc_safe((length + 1) * sizeof(char));
     strcpy(duplicate, str);
     return duplicate;
 }
 
 char * concat(char * str1, char * str2) {
     size_t length = strlen(str1) + strlen(str2);
-    char* duplicate = (char*)malloc((length + 1) * sizeof(char));
+    char* duplicate = (char*)malloc_safe((length + 1) * sizeof(char));
     strcpy(duplicate, str1);
     strcat(duplicate, str2);
     return duplicate;
@@ -67,4 +68,12 @@ void convertToBase64(unsigned short value, char data[2]) {
         unsigned short chunk = (value >> ((1- i)  * 6)) & 0x3F;
         data[i] = base64Table[chunk];
     }
+}
+
+void * malloc_safe(size_t size) {
+    void * ptr = malloc(size);
+    if(ptr == NULL) {
+        FATAL_ERROR("Couldn't allocate memory");
+    }
+    return ptr;
 }
