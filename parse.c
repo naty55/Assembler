@@ -173,6 +173,7 @@ char * read_data_instruction(char * ptr_in_line, data_instruction * inst, int li
         *inst = ENTRY;
     } else {
         HANDLE_ERROR("unkonwn instruction type", line_index);
+        return ptr_in_line;
     }
     if(!isspace(*ptr_in_line)) {
         HANDLE_ERROR("unkonwn instruction type", line_index);
@@ -230,9 +231,7 @@ void read_data(char * ptr_in_line, int line_index, plist data_image, Bool *error
     
 }
 
-void read_string(char * ptr_in_line, int line_index, plist data_image, Bool *error) {
-    i_line blank_line;
-    clist str = create_clist();
+void read_string(char * ptr_in_line, int line_index, clist str, Bool *error) {
     ptr_in_line = skip_spaces(ptr_in_line);
     if(*ptr_in_line != '"') {
         HANDLE_ERROR("Invalid string, missing '\"' before string", line_index);
@@ -241,27 +240,19 @@ void read_string(char * ptr_in_line, int line_index, plist data_image, Bool *err
     }
     ptr_in_line++;
     while (*ptr_in_line != '\0' && *ptr_in_line != '"') {
-        i_line data_line = create_iline(get_plist_length(data_image));
-        set_char(data_line, *ptr_in_line);
         append_char(str, *ptr_in_line);
-        plist_append(data_image, data_line);
         ptr_in_line++;
     }
     if(*ptr_in_line == '"') {
         ptr_in_line++;
     } else {
         HANDLE_ERROR("Invalid string, missing '\"' after string", line_index);
-        free_clist(str);
         return;
     }
     if(!is_str_empty(ptr_in_line)){
         HANDLE_ERROR("Unideintified text after .string instruction", line_index);
         return;
     }
-    blank_line = create_iline(get_plist_length(data_image));
-    plist_append(data_image, blank_line);
-    printf("Found string: '%s'\n", list_to_string(str));
-    free_clist(str);
 }
 
 void read_externals(char * ptr_in_line, ptable symbols_table, int line_index, plist externals, Bool *error) {

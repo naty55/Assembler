@@ -77,3 +77,11 @@ void * malloc_safe(size_t size) {
     }
     return ptr;
 }
+
+void * realloc_safe(void * ptr, size_t size) {
+    ptr = realloc(ptr, size);
+    if(ptr == NULL) {
+        FATAL_ERROR("Couldn't allocate memory");
+    }
+    return ptr;
+}

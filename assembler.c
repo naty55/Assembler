@@ -11,7 +11,6 @@
 #include <ctype.h>
 #include <stdlib.h>
 
-
 void assemble(FILE * source_file, char * filename) {
     plist instruction_image = create_plist();
     plist data_image = create_plist();
@@ -22,14 +21,9 @@ void assemble(FILE * source_file, char * filename) {
     Bool error = False;
     build_image(source_file, instruction_image, data_image, symbols_table, missing_symbols, entries, externals, &error);
     fill_missing_labels_addresses(missing_symbols, symbols_table, get_plist_length(instruction_image), &error);
+    validate_entries(entries, symbols_table, &error);
     write_result_files(instruction_image, data_image, symbols_table, missing_symbols, externals, entries, filename, &error);
-    free_plist(instruction_image);
-    free_plist(data_image);
-    free_ptable(symbols_table, free);
-    free_plist(entries);
-    free_plist(externals);
-    /*free_ptable(missing_symbols, (freeFunction)free_plist);*/
-    
+    free_objects(instruction_image, data_image, symbols_table, entries, externals, missing_symbols);
 }
 
 void build_image(FILE * source_file, plist instruction_image, plist data_image, ptable symbols_table, ptable missing_symbols, plist entries, plist externals, Bool *error) {
@@ -56,18 +50,18 @@ void build_image(FILE * source_file, plist instruction_image, plist data_image, 
 void handle_data(char * ptr_in_line, int line_index, plist data_image, ptable symbols_table, symbol sym, plist entries, plist externals, Bool *error) {
     data_instruction inst;
     ptr_in_line = read_data_instruction(ptr_in_line, &inst, line_index, error);
-
-    if(sym == NULL && inst != EXTERN && inst != ENTRY) {
-        HANDLE_ERROR("INTERNAL ERROR sym==NULL", line_index); /* TODO: See open question issue #3*/
-        return;
+    IF_ERROR_RETURN();
+    if(sym == NULL && (inst == STRING || inst == DATA)) {
+        WARN("inaccessible data", line_index);
+    }
+    if(sym != NULL && (inst == EXTERN || inst == ENTRY)) {
+        WARN("redundent label", line_index);
     }
     
     switch (inst)
     {
     case STRING:
-        symbol_set_offset(sym, get_plist_length(data_image));
-        symbol_set_is_data(sym, True);
-        read_string(ptr_in_line, line_index, data_image, error);
+        handle_string(ptr_in_line, line_index, sym, data_image, error);
         break;
     case DATA:
         symbol_set_offset(sym, get_plist_length(data_image));
@@ -81,6 +75,22 @@ void handle_data(char * ptr_in_line, int line_index, plist data_image, ptable sy
         read_entries(ptr_in_line, entries, line_index, error);
         break;
     }
+}
+
+void handle_string(char * ptr_in_line, int line_index, symbol sym, plist data_image, Bool * error) {
+    int i;
+    clist str = create_clist();
+    symbol_set_offset(sym, get_plist_length(data_image));
+    symbol_set_is_data(sym, True);
+    read_string(ptr_in_line, line_index, str, error);
+    IF_ERROR_RETURN();
+    for (i = 0; i < get_length(str); i++) {
+        i_line data_line = create_iline(get_plist_length(data_image));
+        set_char(data_line, get_char_from_list(str, i));
+        plist_append(data_image, data_line);
+    }
+    plist_append(data_image, create_iline(get_plist_length(data_image)));
+    free(str);
 }
 
 void handle_operation(char * ptr_in_line, int line_index, plist instruciton_image, ptable symbols_table, ptable missing_symbols, Bool * error) {
@@ -112,14 +122,26 @@ void handle_operation(char * ptr_in_line, int line_index, plist instruciton_imag
         printf("Param 2: '%s'\n", list_to_string(param2));
         param2_type = validate_param(param2, &param2_data, line_index, symbols_table, error);
     }
-
+    
+    check_for_extra_text(ptr_in_line, line_index, error);
+    IF_ERROR_RETURN();
+    
     if(expected_params_to_read == 1) {
+        if(!validate_op_and_target_param(op, param1_type)) {
+            HANDLE_ERROR("incorrect param type", line_index);
+        }
         set_target_address_type(first_line, param1_type);
         second_line = create_iline(get_plist_length(instruciton_image) + 1 + IMAGE_OFFSET_SIZE);
         handle_param(param1, param1_data, param1_type, second_line, True, missing_symbols);
     
     }
     if(expected_params_to_read == 2) {
+        if(!validate_op_and_source_param(op, param1_type)) {
+            HANDLE_ERROR("incorrect param type", line_index);
+        }
+        if(!validate_op_and_target_param(op, param2_type)) {
+            HANDLE_ERROR("incorrect param type", line_index);
+        }
         set_source_address_type(first_line, param1_type);
         set_target_address_type(first_line, param2_type);
         if(param1_type == param2_type && param1_type == IMM_REG_ADDR) {
@@ -134,8 +156,6 @@ void handle_operation(char * ptr_in_line, int line_index, plist instruciton_imag
         }
     }
 
-    check_for_extra_text(ptr_in_line, line_index, error);
-    IF_ERROR_RETURN();
     plist_append(instruciton_image, first_line);
     plist_append_if_not_null(instruciton_image, second_line);
     plist_append_if_not_null(instruciton_image, third_line);
@@ -170,14 +190,15 @@ void handle_param(clist param, int param_data, address_type param_type, i_line l
 
 }
 void fill_missing_labels_addresses(ptable missing_symbols, ptable symbols_table, unsigned int instruction_image_size, Bool *error) {
-    IF_ERROR_RETURN();
     int i = 0;
+    IF_ERROR_RETURN();
+
     plist keys = ptable_get_keys(missing_symbols);
     for (; i < get_plist_length(keys); i++) {
         char * symbol_name = get_pointer_from_list(keys, i);
         symbol sym = ptable_get(symbols_table, symbol_name);
         if(sym == NULL) {
-            HANDLE_ERROR("Can't find symbol", -1);
+            HANDLE_ERROR_ONE_PARAM("Can't find symbol ", symbol_name, -1);
         } else {
             plist lines = ptable_get(missing_symbols, symbol_name);
             int j = 0;
@@ -198,4 +219,29 @@ void fill_missing_labels_addresses(ptable missing_symbols, ptable symbols_table,
         }
     }
     free_plist(keys);
+}
+
+void validate_entries(plist entries, ptable symbols_table, Bool * error) {
+    int i;
+    for(i=0; i < get_plist_length(entries); i++) {
+        char * entry = get_pointer_from_list(entries, i);
+        symbol sym = ptable_get(symbols_table, entry);
+        if(sym != NULL) {
+            if(symbol_get_encoding(sym) == E) {
+                HANDLE_ERROR_ONE_PARAM("entry label can't be external, entry: ", entry, -1);
+            }
+        } else {
+            HANDLE_ERROR_ONE_PARAM("entry label is not found, entry: ", entry, -1);
+        }
+    } 
+}
+
+void free_objects(plist instruction_image, plist data_image, ptable symbols_table, plist entries, plist externals, ptable missing_symbols) {
+    free_plist(instruction_image);
+    free_plist(data_image);
+    free_ptable(symbols_table, free);
+    free_plist(entries);
+    free_plist(externals);
+    /*free_ptable(missing_symbols, (freeFunction)free_plist);*/
+
 }

@@ -44,3 +44,6 @@ output.o: output.c $(HEADERS)
 
 clean:
 	rm -f *.o
+
+clean-test:
+	rm ./tests/test*.obj ./tests/test*.am ./tests/test*.ent ./tests/test*.ext

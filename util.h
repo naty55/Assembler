@@ -18,4 +18,5 @@ char * concat(char * str1, char * str2);
 void set_all_null(void ** data, int size);
 void convertToBase64(unsigned short value, char data[2]);
 void * malloc_safe(size_t size);
+void * realloc_safe(void * ptr, size_t size);
 #endif

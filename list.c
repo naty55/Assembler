@@ -21,7 +21,7 @@ clist create_clist() {
 char append_char(clist l, char c) {
     if (l->size == l->length) /* We are out of place*/
     {
-        l->data = realloc(l->data, 2 * l->size * sizeof(char));
+        l->data = realloc_safe(l->data, 2 * l->size * sizeof(char));
         l->size = 2 * l->size;
     }
     l->data[l->length++] = c;
@@ -95,7 +95,7 @@ plist create_plist() {
 void* plist_append(plist l, void* item) {
      if (l->size == l->length) /* We are out of place*/
     {
-        l->data = realloc(l->data, 2 * l->size * sizeof(void *));
+        l->data = realloc_safe(l->data, 2 * l->size * sizeof(void *));
         l->size = 2 * l->size;
     }
     l->data[l->length++] = item;

@@ -15,6 +15,6 @@ address_type validate_param(clist param, int *param_data, int line_index, ptable
 Bool is_param_label(clist param);
 char * read_data_instruction(char * ptr_in_line, data_instruction * inst, int line_index, Bool *error);
 void read_data(char * ptr_in_line, int line_index, plist data_image, Bool *error);
-void read_string(char * ptr_in_line, int line_index, plist data_image, Bool *error);
+void read_string(char * ptr_in_line, int line_index, clist str, Bool *error);
 void read_externals(char * ptr_in_line, ptable symbols_table, int line_index, plist externals, Bool *error);
 void read_entries(char * ptr_in_line, plist entries, int line_index, Bool *error);

@@ -1,6 +1,8 @@
 #ifndef __CONST_H
 #define __CONST_H
-#define MAX_LINE_SIZE 100
+#include "util.h"
+
+#define MAX_LINE_SIZE 81 
 
 #define MACRO "mcro"
 #define ENDMACRO "endmcro"
@@ -57,5 +59,7 @@ typedef enum {
 
 
 short get_params_to_read(operation op);
+Bool validate_op_and_target_param(operation op, address_type param_type);
+Bool validate_op_and_source_param(operation op, address_type param_type);
 
 #endif

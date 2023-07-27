@@ -66,7 +66,9 @@ Bool write_obj(plist inst_iamge, plist data_image, char *filename) {
     fprintf(obj_file, "%ld\t%ld\n", get_plist_length(inst_iamge), get_plist_length(data_image));
     for (; i < get_plist_length(inst_iamge); i++) {
         convertToBase64(i_line_get_data(get_pointer_from_list(inst_iamge, i)), data);
-        fprintf(obj_file, "%s\n", data);
+        if(fprintf(obj_file, "%s\n", data) < 0) {
+            FATAL_ERROR("writing to file failed");
+        }
     }
     for (i=0; i < get_plist_length(data_image); i++) {
         convertToBase64(i_line_get_data(get_pointer_from_list(data_image, i)), data);
