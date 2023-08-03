@@ -6,6 +6,28 @@
 #include "constants.h"
 #include "list.h"
 #include "hashmap.h"
+#include "error.h"
+
+Bool pre_assemble(char * filename) {
+    FILE * am_file;
+    FILE * as_file;
+    char * as_filename = concat(filename, ".as");
+    char * am_filename = concat(filename, ".am");
+    as_file = fopen(as_filename, "r");
+    if(as_file == NULL) {
+        FILE_ERROR(as_filename);
+        return False;   
+    }
+    am_file = fopen(am_filename, "w");
+    if(am_file == NULL) {
+        FILE_ERROR(as_filename);
+        return False;
+    }
+    remove_macros(as_file, am_file);
+    fclose(as_file);
+    fclose(am_file);
+    return True;
+}
 
 int remove_macros(FILE *input_file, FILE* source_file) {
     char line[MAX_LINE_SIZE];

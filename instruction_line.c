@@ -69,28 +69,3 @@ void set_data(i_line i, short data) {
 void set_operation(i_line i, operation op) {
     i->data = (i->data & 0xF1E) | (op << 5);
 }
-
-
-void printBinary(unsigned short value) {
-    int numBits = sizeof(value) * 8; 
-    int numPrintedBits = 0; 
-    int i;
-    printf("FREE: ");
-    for (i = numBits - 1; i >= 0; i--) {
-        unsigned short mask = 1 << i;
-        unsigned short bit = (value & mask) >> i;
-        printf("%u", bit);
-        numPrintedBits++;
-        if (numPrintedBits % 4 == 0 && numPrintedBits != numBits)
-            printf("_");
-    }
-    printf("\n");
-}
-
-void print_i_line(i_line i) {
-    if(i == NULL) {
-        printf("NULL\n");
-        return;
-    }
-    printBinary(i->data);
-}

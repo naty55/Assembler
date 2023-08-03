@@ -1,5 +1,6 @@
 #include "constants.h"
 #include "util.h"
+#include <stdio.h>
 
 short get_params_to_read(operation op) {
     switch (op)

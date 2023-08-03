@@ -17,6 +17,5 @@ void set_operation(i_line i, operation op);
 void set_data_full(i_line i, short data);
 void set_data(i_line i, short data);
 void set_char(i_line i, char data);
-void print_i_line(i_line i);
 
 #endif

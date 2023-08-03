@@ -82,7 +82,7 @@ Bool write_obj(plist inst_iamge, plist data_image, char *filename) {
     return True;
 }
 void write_result_files(plist inst_image, plist data_image, ptable symbols_table, ptable missing_symbols, plist externals, plist entries, char * filename, Bool *error) {
-    IF_ERROR_RETURN();
+    IF_ERROR_RETURN(error);
     Bool reasul = 
     write_ext(externals, missing_symbols, filename) && 
     write_ent(entries, symbols_table, filename) && 

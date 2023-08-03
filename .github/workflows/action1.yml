@@ -15,5 +15,5 @@ jobs:
     - uses: actions/checkout@v3
     - name: make
       run: make
-    - name: run-assembler
-      run: ./assembler
+    - name: test
+      run: make test

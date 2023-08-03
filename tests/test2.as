@@ -1,3 +1,7 @@
 ;test2.as
 .entry HELLO
-HELLO: help 2, @r2
+.entry HELLO
+lea HELLO,   @r2
+HELLO: stop
+STR: .string "HHELLO world!\n"
+.extern STR1

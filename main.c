@@ -13,29 +13,19 @@ int main(int argc, char *argv[]) {
 }
 
 void start(int argc, char *argv[]) {
-    char *as_filename;
-    char *am_filename;
-    FILE * as_file;
-    FILE * am_file;
     if(argc < 2) {
         printf("Usage: assembler <file-names>\n");
         return;
     }
     argc--;
-    printf("[INFO] Number of files to process: %d\n", argc);
+    INFO_1PARAM_INT("Number of files to process:", argc);
     for (;argc > 0; argc--) {
-        printf("[INFO] Working on file %s.as\n", argv[argc]);
-        as_filename = concat(argv[argc], ".as");
-        am_filename = concat(argv[argc], ".am");
-        as_file = fopen(as_filename, "r");
-        am_file = fopen(am_filename, "w");
-        remove_macros(as_file, am_file);
-        fclose(as_file);
-        fclose(am_file);
-        am_file = fopen(am_filename, "r");
-        assemble(am_file, argv[argc]);
-        fclose(am_file);
-        free(as_filename);
-        free(am_filename);
+        Bool hasError = False;
+        INFO_WORKING_ON_FILE(argv[argc])
+        hasError = !pre_assemble(argv[argc]);
+        if(hasError) {
+            continue;
+        }
+        assemble(argv[argc]);
     }
 }
