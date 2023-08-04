@@ -6,7 +6,7 @@ We have 3 data structure, `plist` list of pointers, `clist` list of char data ty
 - `plist` and `clist` are in file `list.c` and are locating memory dynamically as the list grows in size.
 - `ptable` is in file `hashmap.c`, the keys are of type string and values can be pointer to any object. collision handling is done via chaining.
 
-Those data structures are as generic as possible in the limit of the course requirements.
+Those data structures are as generic as possible in the limit of the course requirements, so for example deletion is not supported as it's ont needed.
 ### Data types 
 We have 2 main data types
 - `instruction_line` which holds the binary line data and has interface to handle it.
