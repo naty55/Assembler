@@ -74,24 +74,28 @@ char * read_label(char *ptr_in_line ,int line_index, ptable symbols_table, symbo
     if((ptr_in_line = strchr(ptr_in_line, ':')) != NULL) {
         if(ptr_in_line - label >= 31) {
             HANDLE_ERROR("too long label name", line_index, error);
-        } else if (ptr_in_line - label == 0) {
+            return ptr_in_line;
+        } 
+        if (ptr_in_line - label == 0) {
             HANDLE_ERROR("label name must be at least of size 1", line_index, error);
+            return ptr_in_line;
         }
+        *ptr_in_line = 0;
+        ptr_in_line = skip_spaces(ptr_in_line + 1);
         if(is_keyword(label)) {
             HANDLE_ERROR("label name is saved keyword", line_index, error);
+            return ptr_in_line;
         }
-        else {
-            *ptr_in_line = 0;
-            ptr_in_line = skip_spaces(ptr_in_line + 1);
-            *sym = create_symbol();
-            symbol_set_encoding(*sym, R);
-            symbol_set_offset(*sym, IMAGE_OFFSET_SIZE + image_index);
-            symbol_set_is_data(*sym, False);
-            symbol_set_is_set(*sym, True);
-            ptable_insert(symbols_table, label ,*sym);
-            DEBUG_1PARAM_STR("Found Label :", label);
-            DEBUG_1PARAM_INT("Label location:", symbol_get_offset(ptable_get(symbols_table, label)));
-        }
+        
+        *sym = create_symbol();
+        symbol_set_encoding(*sym, R);
+        symbol_set_offset(*sym, IMAGE_OFFSET_SIZE + image_index);
+        symbol_set_is_data(*sym, False);
+        symbol_set_is_set(*sym, True);
+        ptable_insert(symbols_table, label ,*sym);
+        DEBUG_1PARAM_STR("Found Label :", label);
+        DEBUG_1PARAM_INT("Label location:", symbol_get_offset(ptable_get(symbols_table, label)));
+        
     } else {
         ptr_in_line = label;
     }
@@ -234,13 +238,7 @@ void read_data(char * ptr_in_line, int line_index, plist data_image, Bool *error
                 }
             }    
         }
-        if(*ptr_in_line == ',') {
-            ptr_in_line++;
-        } else if(*ptr_in_line != '\0'){  
-            HANDLE_ERROR("Missing comma between params", line_index, error);
-            free_clist(param);
-            return;
-        }
+        READ_COMMA();
     } while (*ptr_in_line != '\0');
     free_clist(param);
     
@@ -280,20 +278,23 @@ void read_externals(char * ptr_in_line, ptable symbols_table, int line_index, pl
         ptr_in_line = read_next_param(ptr_in_line, param, &read_param);
         ptr_in_line = skip_spaces(ptr_in_line);
         if(read_param) {
+            symbol sym;
             param_counter++;
             param_str = list_to_string(param);
             DEBUG_2PARAM("Found external ", param_str, param_counter);
             if(!is_param_label(param)) {
                 HANDLE_ERROR("Not a valid symbol name", line_index, error);
                 free(param_str);
+                READ_COMMA();
                 continue;
             }
             if(is_keyword(param_str)) {
                 HANDLE_ERROR("label name is saved keyword", line_index, error);
                 free(param_str);
+                READ_COMMA();
                 continue;
             }
-            symbol sym = ptable_get(symbols_table, param_str);
+            sym = ptable_get(symbols_table, param_str);
             if(sym == NULL) {
                 symbol sym = create_symbol();
                 symbol_set_offset(sym, 0);
@@ -323,22 +324,17 @@ void read_externals(char * ptr_in_line, ptable symbols_table, int line_index, pl
                 }
             }    
         }
-        if(*ptr_in_line == ',') {
-            ptr_in_line++;
-        } else if(*ptr_in_line != '\0'){ 
-            HANDLE_ERROR("Missing comma between params", line_index, error);
-            free_clist(param);
-            return;
-        }
+        READ_COMMA();
     } while (*ptr_in_line != '\0');
     free_clist(param);
 
 }
 
-void read_entries(char * ptr_in_line, plist entries, int line_index, Bool *error) {
+void read_entries(char * ptr_in_line, ptable entries, int line_index, Bool *error) {
     clist param = create_clist();
     char * param_str;
     Bool read_param = False;
+    Bool is_declared_as_entry = False;
     int param_counter = 0;
     do {
         clear_clist(param);
@@ -363,23 +359,24 @@ void read_entries(char * ptr_in_line, plist entries, int line_index, Bool *error
         if(!is_param_label(param)) {
             HANDLE_ERROR("Not a valid symbol name", line_index, error);
             free(param_str);
+            READ_COMMA();
             continue;
         }
         if(is_keyword(param_str)) {
             HANDLE_ERROR("label name is saved keyword", line_index, error);
             free(param_str);
+            READ_COMMA();
             continue;
         }
-        plist_append(entries, param_str);
+        is_declared_as_entry = (Bool)(ptable_get(entries, param_str) != NULL);
+        if(!is_declared_as_entry) {
+            ptable_insert(entries, param_str, create_bool(True));
+        } else {
+            WARN_1PARAM("entry is already declared", line_index, param_str);
+        }    
+        free(param_str);
         
-        if(*ptr_in_line == ',') {
-            ptr_in_line++;
-        } else if(*ptr_in_line != '\0'){ 
-            HANDLE_ERROR("Missing comma between params", line_index, error);
-            free_clist(param);
-            return;
-        }
+        READ_COMMA();
     } while (*ptr_in_line != '\0');
     free_clist(param);
-
 }

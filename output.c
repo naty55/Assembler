@@ -36,12 +36,13 @@ Bool write_ext(plist externals, ptable missing_symbols, char *filename) {
     free(ext_filename);
     return True;
 }
-Bool write_ent(plist entries, ptable symbols_table, char *filename) {
+Bool write_ent(ptable entries, ptable symbols_table, char *filename) {
+    plist keys = ptable_get_keys(entries);
     int i;
     char * ent_filename;
     FILE * ent_file;
 
-    if(get_plist_length(entries) == 0) {
+    if(get_plist_length(keys) == 0) {
         return True;
     }
 
@@ -51,13 +52,14 @@ Bool write_ent(plist entries, ptable symbols_table, char *filename) {
     ent_filename = concat(filename, ".ent");
     ent_file = fopen(ent_filename, "w");
     
-    for (;i < get_plist_length(entries); i++) {
-        char * label = get_pointer_from_list(entries, i);
+    for (;i < get_plist_length(keys); i++) {
+        char * label = get_pointer_from_list(keys, i);
         symbol sym = ptable_get(symbols_table, label);
         fprintf(ent_file, "%s\t%d\n", label, symbol_get_offset(sym));
     }
     fclose(ent_file);
     free(ent_filename);
+    free(keys);
     return True;
 }
 Bool write_obj(plist inst_iamge, plist data_image, char *filename) {
@@ -81,7 +83,7 @@ Bool write_obj(plist inst_iamge, plist data_image, char *filename) {
     fclose(obj_file);
     return True;
 }
-void write_result_files(plist inst_image, plist data_image, ptable symbols_table, ptable missing_symbols, plist externals, plist entries, char * filename, Bool *error) {
+void write_result_files(plist inst_image, plist data_image, ptable symbols_table, ptable missing_symbols, plist externals, ptable entries, char * filename, Bool *error) {
     IF_ERROR_RETURN(error);
     Bool reasul = 
     write_ext(externals, missing_symbols, filename) && 

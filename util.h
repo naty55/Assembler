@@ -11,6 +11,7 @@ typedef void (*freeFunction)(void *);
 
 
 char * skip_spaces(char * str);
+Bool * create_bool(Bool val);
 Bool is_str_empty(char * str);
 Bool string_to_number(char *str, int * number);
 char * duplicate_string(char * str);

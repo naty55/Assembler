@@ -6,7 +6,11 @@
 #include "error.h"
 
 
-
+Bool * create_bool(Bool val) {
+    Bool * b =  malloc_safe(sizeof(Bool));
+    *b = val;
+    return b;
+}
 char * skip_spaces(char * str) {
     while (isspace(*(str++)));
     return --str;

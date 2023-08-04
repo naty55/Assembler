@@ -1,8 +1,21 @@
+#ifndef __PARSE_H
+#define __PARSE_H
+
 #include "constants.h"
 #include "util.h"
 #include "hashmap.h"
 #include "list.h"
 #include "symbol.h"
+
+#define READ_COMMA() \
+ptr_in_line = skip_spaces(ptr_in_line); \
+if(*ptr_in_line == ',') { \
+            ptr_in_line++; \
+        } else if(*ptr_in_line != '\0'){ \
+            HANDLE_ERROR("Missing comma between params", line_index, error); \
+            free_clist(param); \
+            return; \
+        } \
 
 Bool is_line_comment_or_blank(char * ptr_in_line);
 Bool is_line_data_instruction(char * ptr_in_line);
@@ -17,4 +30,6 @@ char * read_data_instruction(char * ptr_in_line, data_instruction * inst, int li
 void read_data(char * ptr_in_line, int line_index, plist data_image, Bool *error);
 void read_string(char * ptr_in_line, int line_index, clist str, Bool *error);
 void read_externals(char * ptr_in_line, ptable symbols_table, int line_index, plist externals, Bool *error);
-void read_entries(char * ptr_in_line, plist entries, int line_index, Bool *error);
+void read_entries(char * ptr_in_line, ptable entries, int line_index, Bool *error);
+
+#endif

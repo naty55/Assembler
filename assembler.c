@@ -28,7 +28,7 @@ void build(FILE * am_file, char * filename) {
     plist data_image = create_plist();
     ptable symbols_table = create_ptable();
     ptable missing_symbols = create_ptable();
-    plist entries = create_plist();
+    ptable entries = create_ptable();
     plist externals = create_plist();
     Bool error = False;
     build_image(am_file, instruction_image, data_image, symbols_table, missing_symbols, entries, externals, &error);
@@ -38,7 +38,7 @@ void build(FILE * am_file, char * filename) {
     free_objects(instruction_image, data_image, symbols_table, entries, externals, missing_symbols);
 }
 
-void build_image(FILE * source_file, plist instruction_image, plist data_image, ptable symbols_table, ptable missing_symbols, plist entries, plist externals, Bool *error) {
+void build_image(FILE * source_file, plist instruction_image, plist data_image, ptable symbols_table, ptable missing_symbols, ptable entries, plist externals, Bool *error) {
     char line[MAX_LINE_SIZE];
     char *ptr_in_line;
     int line_index = 0;
@@ -59,7 +59,7 @@ void build_image(FILE * source_file, plist instruction_image, plist data_image, 
     }
 }
 
-void handle_data(char * ptr_in_line, int line_index, plist data_image, ptable symbols_table, symbol sym, plist entries, plist externals, Bool *error) {
+void handle_data(char * ptr_in_line, int line_index, plist data_image, ptable symbols_table, symbol sym, ptable entries, plist externals, Bool *error) {
     data_instruction inst;
     ptr_in_line = read_data_instruction(ptr_in_line, &inst, line_index, error);
     IF_ERROR_RETURN(error);
@@ -247,10 +247,11 @@ void fill_missing_labels_addresses(ptable missing_symbols, ptable symbols_table,
     free_plist(keys);
 }
 
-void validate_entries(plist entries, ptable symbols_table, Bool * error) {
+void validate_entries(ptable entries, ptable symbols_table, Bool * error) {
     int i;
-    for(i=0; i < get_plist_length(entries); i++) {
-        char * entry = get_pointer_from_list(entries, i);
+    plist keys = ptable_get_keys(entries);
+    for(i=0; i < get_plist_length(keys); i++) {
+        char * entry = get_pointer_from_list(keys, i);
         symbol sym = ptable_get(symbols_table, entry);
         if(sym != NULL) {
             if(symbol_get_encoding(sym) == E) {
@@ -259,14 +260,15 @@ void validate_entries(plist entries, ptable symbols_table, Bool * error) {
         } else {
             HANDLE_ERROR_ONE_PARAM("entry label is not found, entry: ", entry, -1, error);
         }
-    } 
+    }
+    free(keys);
 }
 
-void free_objects(plist instruction_image, plist data_image, ptable symbols_table, plist entries, plist externals, ptable missing_symbols) {
+void free_objects(plist instruction_image, plist data_image, ptable symbols_table, ptable entries, plist externals, ptable missing_symbols) {
     free_plist(instruction_image);
     free_plist(data_image);
     free_ptable(symbols_table, free);
-    free_plist(entries);
+    free_ptable(entries, free);
     free_plist(externals);
     free_ptable(missing_symbols, free);
 
