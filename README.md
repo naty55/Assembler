@@ -20,3 +20,5 @@ We have couple of objects generated for every assembly file
 - entries (ptable<string, Bool>);
 - externals (plist<string>)
 ## Decisions and behaviors that were not specified in the course guide
+1. Declaring twice or more label as external or entry will result warning only
+2. Instruction of `.string` or `.data` without label will result warning as the data is not accessbiale
