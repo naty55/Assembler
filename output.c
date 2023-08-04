@@ -12,7 +12,7 @@ Bool write_ext(plist externals, ptable missing_symbols, char *filename) {
     int i,j;
     char * ext_filename;
     FILE * ext_file;
-    if(get_plist_length(externals) == 0) {
+    if(plist_get_length(externals) == 0) {
         return True;
     }
     INFO("Write externals file");
@@ -20,14 +20,14 @@ Bool write_ext(plist externals, ptable missing_symbols, char *filename) {
     ext_filename = concat(filename, ".ext");
     ext_file = fopen(ext_filename, "w");
     
-    for (i = 0; i < get_plist_length(externals); i++) {
-        char * label = get_pointer_from_list(externals, i);
+    for (i = 0; i < plist_get_length(externals); i++) {
+        char * label = plist_get(externals, i);
         plist lines = ptable_get(missing_symbols, label);
         if(lines == NULL) {
             continue;
         }
-        for (j = 0; j < get_plist_length(lines); j++) {
-            i_line line = get_pointer_from_list(lines, j);
+        for (j = 0; j < plist_get_length(lines); j++) {
+            i_line line = plist_get(lines, j);
             fprintf(ext_file, "%s\t%ld\n", label, i_line_get_binary_line_index(line));
         }
         
@@ -42,7 +42,7 @@ Bool write_ent(ptable entries, ptable symbols_table, char *filename) {
     char * ent_filename;
     FILE * ent_file;
 
-    if(get_plist_length(keys) == 0) {
+    if(plist_get_length(keys) == 0) {
         return True;
     }
 
@@ -52,10 +52,10 @@ Bool write_ent(ptable entries, ptable symbols_table, char *filename) {
     ent_filename = concat(filename, ".ent");
     ent_file = fopen(ent_filename, "w");
     
-    for (;i < get_plist_length(keys); i++) {
-        char * label = get_pointer_from_list(keys, i);
+    for (;i < plist_get_length(keys); i++) {
+        char * label = plist_get(keys, i);
         symbol sym = ptable_get(symbols_table, label);
-        fprintf(ent_file, "%s\t%d\n", label, symbol_get_offset(sym));
+        fprintf(ent_file, "%s\t%d\n", label, symbol_get_address(sym));
     }
     fclose(ent_file);
     free(ent_filename);
@@ -68,15 +68,15 @@ Bool write_obj(plist inst_iamge, plist data_image, char *filename) {
     char data[2];
     FILE * obj_file = fopen(obj_filename, "w");
     INFO("Write object file");
-    fprintf(obj_file, "%ld\t%ld\n", get_plist_length(inst_iamge), get_plist_length(data_image));
-    for (; i < get_plist_length(inst_iamge); i++) {
-        convertToBase64(i_line_get_data(get_pointer_from_list(inst_iamge, i)), data);
+    fprintf(obj_file, "%ld\t%ld\n", plist_get_length(inst_iamge), plist_get_length(data_image));
+    for (; i < plist_get_length(inst_iamge); i++) {
+        convertToBase64(i_line_get_data(plist_get(inst_iamge, i)), data);
         if(fprintf(obj_file, "%s\n", data) < 0) {
             FATAL_ERROR("writing to file failed");
         }
     }
-    for (i=0; i < get_plist_length(data_image); i++) {
-        convertToBase64(i_line_get_data(get_pointer_from_list(data_image, i)), data);
+    for (i=0; i < plist_get_length(data_image); i++) {
+        convertToBase64(i_line_get_data(plist_get(data_image, i)), data);
         fprintf(obj_file, "%s\n", data);
     }
     free(obj_filename);
@@ -85,8 +85,7 @@ Bool write_obj(plist inst_iamge, plist data_image, char *filename) {
 }
 void write_result_files(plist inst_image, plist data_image, ptable symbols_table, ptable missing_symbols, plist externals, ptable entries, char * filename, Bool *error) {
     IF_ERROR_RETURN(error);
-    Bool reasul = 
-    write_ext(externals, missing_symbols, filename) && 
-    write_ent(entries, symbols_table, filename) && 
+    write_ext(externals, missing_symbols, filename);
+    write_ent(entries, symbols_table, filename);
     write_obj(inst_image, data_image, filename);
 }

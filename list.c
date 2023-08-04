@@ -18,7 +18,7 @@ clist create_clist() {
     return list;
 }
 
-char append_char(clist l, char c) {
+char clist_append_char(clist l, char c) {
     if (l->size == l->length) /* We are out of place*/
     {
         l->data = realloc_safe(l->data, 2 * l->size * sizeof(char));
@@ -27,18 +27,18 @@ char append_char(clist l, char c) {
     l->data[l->length++] = c;
     return c;
 }
-char append_n_chars(clist l, char *items, int size) {
+char clist_append_n_chars(clist l, char *items, int size) {
     int i;
     for (i = 0; i < size; i++) {
-        append_char(l, items[i]);
+        clist_append_char(l, items[i]);
     }
     return items[i];
 }
 
-char append_chars(clist l, char *items) {
+char clist_append_chars(clist l, char *items) {
     int i;
     for (i = 0; items[i] != 0; i++) {
-        append_char(l, items[i]);
+        clist_append_char(l, items[i]);
     }
     return items[i];
 }
@@ -46,36 +46,36 @@ char append_chars(clist l, char *items) {
 char clist_read_string(clist l, char * str) {
     str = skip_spaces(str);
     while(!isspace(*str) && *str != '\n' && *str != '\0') {
-        append_char(l, *str);
+        clist_append_char(l, *str);
         str++;
     }
     return *(str - 1);
 }
 
-char get_char_from_list(clist l, int i) {
+char clist_get(clist l, int i) {
     return (l->data)[i];
 }
 
-unsigned long get_length(clist l) {
+unsigned long clist_get_length(clist l) {
     return l->length;
 }
 
-char * list_to_string(clist l) {
+char * clist_to_string(clist l) {
     char * str = malloc_safe((l->length + 1) * sizeof(char));
     strncpy(str, l->data, l->length);
     str[l->length] = '\0';
     return str;
 }
 
-clist clear_clist(clist l) {
+clist clist_clear(clist l) {
     l->length = 0;
     return l;
 }
-Bool is_clist_empty(clist l) {
+Bool clist_is_empty(clist l) {
     return (Bool)(l->length == 0);
 }
 
-void free_clist(clist l) {
+void clist_free(clist l) {
     free(l->data);
     free(l);
 }
@@ -109,17 +109,17 @@ void* plist_append_if_not_null(plist l, void* item) {
     return item;
 }
 
-void* get_pointer_from_list(plist l, int i) {
+void* plist_get(plist l, int i) {
     return l->data[i];
 }
-unsigned long get_plist_length(plist l) {
+unsigned long plist_get_length(plist l) {
     return l->length;
 }
 
-Bool is_plist_empty(plist l) {
+Bool plist_is_empty(plist l) {
     return (Bool)(l->length == 0);
 }
-void free_plist(plist l) {
+void plist_free(plist l) {
     int i;
     for (i = 0; i < l->length; i++) {
         free(l->data[i]);

@@ -13,7 +13,7 @@ if(*ptr_in_line == ',') { \
             ptr_in_line++; \
         } else if(*ptr_in_line != '\0'){ \
             HANDLE_ERROR("Missing comma between params", line_index, error); \
-            free_clist(param); \
+            clist_free(param); \
             return; \
         } \
 

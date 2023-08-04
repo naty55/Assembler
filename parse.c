@@ -89,12 +89,12 @@ char * read_label(char *ptr_in_line ,int line_index, ptable symbols_table, symbo
         
         *sym = create_symbol();
         symbol_set_encoding(*sym, R);
-        symbol_set_offset(*sym, IMAGE_OFFSET_SIZE + image_index);
+        symbol_set_address(*sym, IMAGE_OFFSET_SIZE + image_index);
         symbol_set_is_data(*sym, False);
         symbol_set_is_set(*sym, True);
         ptable_insert(symbols_table, label ,*sym);
         DEBUG_1PARAM_STR("Found Label :", label);
-        DEBUG_1PARAM_INT("Label location:", symbol_get_offset(ptable_get(symbols_table, label)));
+        DEBUG_1PARAM_INT("Label location:", symbol_get_address(ptable_get(symbols_table, label)));
         
     } else {
         ptr_in_line = label;
@@ -103,7 +103,7 @@ char * read_label(char *ptr_in_line ,int line_index, ptable symbols_table, symbo
 }
 
 char * get_next_param(char *ptr_in_line, clist param, Bool *read_param, int line_index, Bool *error) {
-    clear_clist(param);
+    clist_clear(param);
     *read_param = False;
     ptr_in_line = skip_spaces(ptr_in_line);
     if(*ptr_in_line != ',') {
@@ -117,7 +117,7 @@ char * get_next_param(char *ptr_in_line, clist param, Bool *read_param, int line
 char * read_next_param(char * ptr_in_line, clist param, Bool *read_param) {
     ptr_in_line = skip_spaces(ptr_in_line);
     while (*ptr_in_line != '\0' && !isspace(*ptr_in_line) && *ptr_in_line != ',') {
-        append_char(param, *ptr_in_line++);
+        clist_append_char(param, *ptr_in_line++);
         *read_param = True;
     }
     return ptr_in_line;
@@ -131,19 +131,19 @@ void check_for_extra_text(char *ptr_in_line, int line_index, Bool *error) {
 
 address_type validate_param(clist param, int * param_data, int line_index, ptable symbols_table, Bool *error) {
     char * param_str;
-    if(get_length(param) == 0) {
+    if(clist_get_length(param) == 0) {
         HANDLE_ERROR("missing parameter", line_index, error);
         return ABS_ADDR;
     }
-    if(get_char_from_list(param, 0) == '@') {
-        unsigned short reg = get_char_from_list(param, 2) - '0';
-        if (reg < 0 || 7 < reg || get_length(param) > 3 || get_char_from_list(param, 1) != 'r') {
+    if(clist_get(param, 0) == '@') {
+        unsigned short reg = clist_get(param, 2) - '0';
+        if (reg < 0 || 7 < reg || clist_get_length(param) > 3 || clist_get(param, 1) != 'r') {
             HANDLE_ERROR("unknown register", line_index, error);
             return IMM_REG_ADDR;
         }
         return IMM_REG_ADDR;
     }
-    param_str = list_to_string(param);
+    param_str = clist_to_string(param);
     if(string_to_number(param_str, param_data)) {
         DEBUG_1PARAM_INT("Found Data:", *param_data);
         return ABS_ADDR;
@@ -158,12 +158,12 @@ address_type validate_param(clist param, int * param_data, int line_index, ptabl
 
 Bool is_param_label(clist param) {
     int i = 0;
-    if(get_length(param) == 0 || get_length(param) >= 32) {
+    if(clist_get_length(param) == 0 || clist_get_length(param) >= 32) {
         return False;
     }
-    if(isalpha(get_char_from_list(param, i))) {
-        for (i=1; i < get_length(param); i++) {
-            if(!isalnum(get_char_from_list(param, i))) {
+    if(isalpha(clist_get(param, i))) {
+        for (i=1; i < clist_get_length(param); i++) {
+            if(!isalnum(clist_get(param, i))) {
                 return False;
             }
         }
@@ -203,22 +203,22 @@ void read_data(char * ptr_in_line, int line_index, plist data_image, Bool *error
     Bool read_param = False;
     int param_counter = 0;
     do {
-        clear_clist(param);
+        clist_clear(param);
         param_data = 0;
         ptr_in_line = read_next_param(ptr_in_line, param, &read_param);
         ptr_in_line = skip_spaces(ptr_in_line);
         if(read_param) {
-            param_str = list_to_string(param);
+            param_str = clist_to_string(param);
             DEBUG_2PARAM("Found param:", param_str, param_counter);
             param_counter++;
             if(string_to_number(param_str, &param_data)) {
-                i_line data_line = create_iline(get_plist_length(data_image));
+                i_line data_line = create_iline(plist_get_length(data_image));
 
                 if(param_data < -2048 || 2047 < param_data) {
                     param_data = 0;
                     WARN("data overflow, will set data to 0", line_index);
                 }
-                set_data_full(data_line, param_data);
+                i_line_set_data_full(data_line, param_data);
                 plist_append(data_image, data_line);
             } else {
                 HANDLE_ERROR("Data is not valid integer", line_index, error);
@@ -228,19 +228,19 @@ void read_data(char * ptr_in_line, int line_index, plist data_image, Bool *error
         } else {
             if(param_counter == 0){
                 HANDLE_ERROR("No data after data instruction", line_index, error);
-                free_clist(param);
+                clist_free(param);
                 return;
             } else {
                 if(*ptr_in_line == ',') {
                     HANDLE_ERROR("Extra comma after data", line_index, error);
-                    free_clist(param);
+                    clist_free(param);
                     return;
                 }
             }    
         }
         READ_COMMA();
     } while (*ptr_in_line != '\0');
-    free_clist(param);
+    clist_free(param);
     
 }
 
@@ -248,12 +248,12 @@ void read_string(char * ptr_in_line, int line_index, clist str, Bool *error) {
     ptr_in_line = skip_spaces(ptr_in_line);
     if(*ptr_in_line != '"') {
         HANDLE_ERROR("Invalid string, missing '\"' before string", line_index, error);
-        free_clist(str);
+        clist_free(str);
         return;
     }
     ptr_in_line++;
     while (*ptr_in_line != '\0' && *ptr_in_line != '"') {
-        append_char(str, *ptr_in_line);
+        clist_append_char(str, *ptr_in_line);
         ptr_in_line++;
     }
     if(*ptr_in_line == '"') {
@@ -274,13 +274,13 @@ void read_externals(char * ptr_in_line, ptable symbols_table, int line_index, pl
     Bool read_param = False;
     int param_counter = 0;
     do {
-        clear_clist(param);
+        clist_clear(param);
         ptr_in_line = read_next_param(ptr_in_line, param, &read_param);
         ptr_in_line = skip_spaces(ptr_in_line);
         if(read_param) {
             symbol sym;
             param_counter++;
-            param_str = list_to_string(param);
+            param_str = clist_to_string(param);
             DEBUG_2PARAM("Found external ", param_str, param_counter);
             if(!is_param_label(param)) {
                 HANDLE_ERROR("Not a valid symbol name", line_index, error);
@@ -297,7 +297,7 @@ void read_externals(char * ptr_in_line, ptable symbols_table, int line_index, pl
             sym = ptable_get(symbols_table, param_str);
             if(sym == NULL) {
                 symbol sym = create_symbol();
-                symbol_set_offset(sym, 0);
+                symbol_set_address(sym, 0);
                 symbol_set_is_data(sym, False);
                 symbol_set_encoding(sym, E);
                 symbol_set_is_set(sym, True);
@@ -314,19 +314,19 @@ void read_externals(char * ptr_in_line, ptable symbols_table, int line_index, pl
         } else {
             if(param_counter == 0){
                 HANDLE_ERROR("No symbols after .extern instruction", line_index, error);
-                free_clist(param);
+                clist_free(param);
                 return;
             } else {
                 if(*ptr_in_line == ',') {
                     HANDLE_ERROR("Extra comma after symbols", line_index, error);
-                    free_clist(param);
+                    clist_free(param);
                     return;
                 }
             }    
         }
         READ_COMMA();
     } while (*ptr_in_line != '\0');
-    free_clist(param);
+    clist_free(param);
 
 }
 
@@ -337,24 +337,24 @@ void read_entries(char * ptr_in_line, ptable entries, int line_index, Bool *erro
     Bool is_declared_as_entry = False;
     int param_counter = 0;
     do {
-        clear_clist(param);
+        clist_clear(param);
         ptr_in_line = read_next_param(ptr_in_line, param, &read_param);
         ptr_in_line = skip_spaces(ptr_in_line);
         if(!read_param) {
             if(param_counter == 0){
                 HANDLE_ERROR("No symbols after .extern instruction", line_index, error);
-                free_clist(param);
+                clist_free(param);
                 return;
             } else {
                 if(*ptr_in_line == ',') {
                     HANDLE_ERROR("Extra comma after symbols", line_index, error);
-                    free_clist(param);
+                    clist_free(param);
                     return;
                 }
             }    
         }
         param_counter++;
-        param_str = list_to_string(param);
+        param_str = clist_to_string(param);
         DEBUG_2PARAM("Found entry", param_str, param_counter);
         if(!is_param_label(param)) {
             HANDLE_ERROR("Not a valid symbol name", line_index, error);
@@ -378,5 +378,5 @@ void read_entries(char * ptr_in_line, ptable entries, int line_index, Bool *erro
         
         READ_COMMA();
     } while (*ptr_in_line != '\0');
-    free_clist(param);
+    clist_free(param);
 }

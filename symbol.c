@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 struct Symbol {
-    unsigned int offset;
+    unsigned int address;
     encoding encode;
     Bool is_data;
     Bool is_set;
@@ -16,8 +16,8 @@ symbol create_symbol() {
     return sym;
 }
 
-unsigned int symbol_get_offset(symbol sym) {
-    return sym->offset;
+unsigned int symbol_get_address(symbol sym) {
+    return sym->address;
 }
 
 encoding symbol_get_encoding(symbol sym) {
@@ -32,8 +32,8 @@ Bool symbol_is_set(symbol sym) {
     return sym->is_set;
 }
 
-void symbol_set_offset(symbol sym, unsigned int offset) {
-    sym->offset = offset;
+void symbol_set_address(symbol sym, unsigned int address) {
+    sym->address = address;
 }
 
 void symbol_set_encoding(symbol sym, encoding encode) {
