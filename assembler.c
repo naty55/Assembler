@@ -142,6 +142,7 @@ void handle_operation(char * ptr_in_line, int line_index, plist instruciton_imag
     }
     
     check_for_extra_text(ptr_in_line, line_index, error);
+    *error = *error || current_line_has_error;
     IF_ERROR_RETURN(&current_line_has_error);
     
     set_operation(first_line, op);

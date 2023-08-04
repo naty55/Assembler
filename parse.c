@@ -68,11 +68,17 @@ char * read_label(char *ptr_in_line ,int line_index, ptable symbols_table, symbo
     char * label;
     ptr_in_line = skip_spaces(ptr_in_line);
     label = ptr_in_line;
+    if(*ptr_in_line == '.') {
+        return ptr_in_line;
+    }
     if((ptr_in_line = strchr(ptr_in_line, ':')) != NULL) {
         if(ptr_in_line - label >= 31) {
             HANDLE_ERROR("too long label name", line_index, error);
         } else if (ptr_in_line - label == 0) {
             HANDLE_ERROR("label name must be at least of size 1", line_index, error);
+        }
+        if(is_keyword(label)) {
+            HANDLE_ERROR("label name is saved keyword", line_index, error);
         }
         else {
             *ptr_in_line = 0;
@@ -97,7 +103,7 @@ char * get_next_param(char *ptr_in_line, clist param, Bool *read_param, int line
     *read_param = False;
     ptr_in_line = skip_spaces(ptr_in_line);
     if(*ptr_in_line != ',') {
-        HANDLE_ERROR("Missing comma between params", line_index, error);
+        HANDLE_ERROR("missing comma between params", line_index, error);
         return ptr_in_line;
     }
     ptr_in_line++;
@@ -148,7 +154,7 @@ address_type validate_param(clist param, int * param_data, int line_index, ptabl
 
 Bool is_param_label(clist param) {
     int i = 0;
-    if(get_length(param) >= 32) {
+    if(get_length(param) == 0 || get_length(param) >= 32) {
         return False;
     }
     if(isalpha(get_char_from_list(param, i))) {
@@ -277,25 +283,31 @@ void read_externals(char * ptr_in_line, ptable symbols_table, int line_index, pl
             param_counter++;
             param_str = list_to_string(param);
             DEBUG_2PARAM("Found external ", param_str, param_counter);
-            if(is_param_label(param)) {
-                symbol sym = ptable_get(symbols_table, param_str);
-                if(sym == NULL) {
-                    symbol sym = create_symbol();
-                    symbol_set_offset(sym, 0);
-                    symbol_set_is_data(sym, False);
-                    symbol_set_encoding(sym, E);
-                    symbol_set_is_set(sym, True);
-                    ptable_insert(symbols_table, param_str, sym);
-                    plist_append(externals, param_str);
-                } else {
-                    if(symbol_get_encoding(sym) == E) {
-                        WARN("external is already defined twice", line_index);
-                    } else {
-                        HANDLE_ERROR("already defined symbol", line_index, error);
-                    }
-                }
-            } else {
+            if(!is_param_label(param)) {
                 HANDLE_ERROR("Not a valid symbol name", line_index, error);
+                free(param_str);
+                continue;
+            }
+            if(is_keyword(param_str)) {
+                HANDLE_ERROR("label name is saved keyword", line_index, error);
+                free(param_str);
+                continue;
+            }
+            symbol sym = ptable_get(symbols_table, param_str);
+            if(sym == NULL) {
+                symbol sym = create_symbol();
+                symbol_set_offset(sym, 0);
+                symbol_set_is_data(sym, False);
+                symbol_set_encoding(sym, E);
+                symbol_set_is_set(sym, True);
+                ptable_insert(symbols_table, param_str, sym);
+                plist_append(externals, param_str);
+            } else {
+                if(symbol_get_encoding(sym) == E) {
+                    WARN_1PARAM("external is already defined", line_index, param_str);
+                } else {
+                    HANDLE_ERROR("already defined symbol", line_index, error);
+                }
             }
             
         } else {
@@ -332,17 +344,7 @@ void read_entries(char * ptr_in_line, plist entries, int line_index, Bool *error
         clear_clist(param);
         ptr_in_line = read_next_param(ptr_in_line, param, &read_param);
         ptr_in_line = skip_spaces(ptr_in_line);
-        if(read_param) {
-            param_counter++;
-            param_str = list_to_string(param);
-            DEBUG_2PARAM("Found entry", param_str, param_counter);
-            if(is_param_label(param)) {
-                plist_append(entries, param_str);
-            } else {
-                HANDLE_ERROR("Not a valid symbol name", line_index, error); 
-            }
-            
-        } else {
+        if(!read_param) {
             if(param_counter == 0){
                 HANDLE_ERROR("No symbols after .extern instruction", line_index, error);
                 free_clist(param);
@@ -355,6 +357,21 @@ void read_entries(char * ptr_in_line, plist entries, int line_index, Bool *error
                 }
             }    
         }
+        param_counter++;
+        param_str = list_to_string(param);
+        DEBUG_2PARAM("Found entry", param_str, param_counter);
+        if(!is_param_label(param)) {
+            HANDLE_ERROR("Not a valid symbol name", line_index, error);
+            free(param_str);
+            continue;
+        }
+        if(is_keyword(param_str)) {
+            HANDLE_ERROR("label name is saved keyword", line_index, error);
+            free(param_str);
+            continue;
+        }
+        plist_append(entries, param_str);
+        
         if(*ptr_in_line == ',') {
             ptr_in_line++;
         } else if(*ptr_in_line != '\0'){ 

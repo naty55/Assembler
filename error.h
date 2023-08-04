@@ -7,6 +7,7 @@
 #define INFO_WORKING_ON_FILE(filename) printf("[INFO] Working on file %s.as\n", filename);
 #define INFO_1PARAM_INT(message, param) printf("[INFO] %s %d\n", message, param);
 #define WARN(message, index) printf("[WARN] warning at line %d %s \n", index, message);
+#define WARN_1PARAM(message, index, param) printf("[WARN] warning at line %d %s %s\n", index, message, param);
 #define FILE_ERROR(filename) printf("Error: can't open file %s\n", filename);
 #define HANDLE_ERROR(message, index, error) \
         printf("Error: error at line %d %s\n", index, message); \
@@ -20,7 +21,7 @@
         exit(EXIT_FAILURE);
 
 
-/*#define DEBUG_FLAG*/
+#define DEBUG_FLAG
 #ifdef DEBUG_FLAG 
 #define DEBUG_LINE(line, line_index) printf("[DEBUG] %d\t: %s\n", line_index, line);
 #define DEBUG(message) printf("[DEBUG] %s \n", message); 

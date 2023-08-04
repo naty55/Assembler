@@ -61,5 +61,5 @@ typedef enum {
 short get_params_to_read(operation op);
 Bool validate_op_and_target_param(operation op, address_type param_type);
 Bool validate_op_and_source_param(operation op, address_type param_type);
-
+Bool is_keyword(char * str);
 #endif
