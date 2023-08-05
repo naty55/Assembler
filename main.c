@@ -26,6 +26,7 @@ void start(int argc, char *argv[]) {
         if(hasError) {
             continue;
         }
+        INFO("Start assembling");
         assemble(argv[argc]);
     }
 }

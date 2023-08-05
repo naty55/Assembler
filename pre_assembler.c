@@ -9,6 +9,7 @@
 #include "error.h"
 
 Bool pre_assemble(char * filename) {
+    Bool is_successful = True;
     FILE * am_file;
     FILE * as_file;
     char * as_filename = concat(filename, ".as");
@@ -23,51 +24,74 @@ Bool pre_assemble(char * filename) {
         FILE_ERROR(as_filename);
         return False;
     }
-    remove_macros(as_file, am_file);
+    is_successful = remove_macros(as_file, am_file);
     fclose(as_file);
     fclose(am_file);
+    return is_successful;
+}
+
+Bool remove_macros(FILE *input_file, FILE* source_file) {
+    char line[MAX_LINE_SIZE];
+    char *ptr_in_line;
+    clist macro_name = create_clist(); /* If we are reading macro - it's not empty */
+    clist macro_content;
+    ptable macros_table = create_ptable();
+    char *macro_name_array;
+    while(fgets(line, MAX_LINE_SIZE, input_file) != NULL) {
+        ptr_in_line = skip_spaces(line);
+        if(!clist_is_empty(macro_name)) { /* We are reading macro - so read its content */
+            read_macro_content(line, macro_name, macro_content);
+            continue;
+        }
+        
+        if(strncmp(MACRO, ptr_in_line, 4) == 0) { /* Found macro declaration */
+            if(!read_macro_name(ptr_in_line + 4, macro_name, &macro_content, macros_table)) {
+                return False;
+            }
+            continue;
+        } 
+        clist_read_string(macro_name, ptr_in_line);
+        macro_name_array = clist_to_string(macro_name);
+        macro_content = ptable_get(macros_table, macro_name_array);
+        if(macro_content != NULL) {
+            
+            char *content_array = clist_to_string(macro_content);
+            fputs(content_array, source_file);
+            free(content_array);
+        } else {
+            fputs(line, source_file);
+        }
+        clist_clear(macro_name);
+        free(macro_name_array);   
+    }
+    
+    ptable_free(macros_table, free);
+    clist_free(macro_name);
     return True;
 }
 
-int remove_macros(FILE *input_file, FILE* source_file) {
-    char line[MAX_LINE_SIZE];
-    char *ptr_in_line;
-    clist macro_name = create_clist();
-    clist macro_content;
-    ptable macrosTable = create_ptable();
-    while(fgets(line, MAX_LINE_SIZE, input_file) != NULL) {
-        if(!clist_is_empty(macro_name)) {
-            ptr_in_line = skip_spaces(line);
-            if(strncmp(ENDMACRO, ptr_in_line, 7) == 0) {
-                clist_clear(macro_name);
-            } else {
-                clist_append_chars(macro_content, line);
-            }
-
-        } else {
-            ptr_in_line =  skip_spaces(line);
-            if(strncmp(MACRO, ptr_in_line, 4) == 0) {
-                clist_read_string(macro_name, ptr_in_line + 4);
-                macro_content = create_clist();
-                ptable_insert(macrosTable, clist_to_string(macro_name), macro_content);
-            } else {
-                char *macro_name_array;
-                clist_read_string(macro_name, ptr_in_line);
-                macro_name_array = clist_to_string(macro_name);
-                macro_content = ptable_get(macrosTable, macro_name_array);
-                if(macro_content != NULL) {
-                    char *content_array = clist_to_string(macro_content);
-                    fputs(content_array, source_file);
-                    free(content_array);
-                } else {
-                    fputs(line, source_file);
-                }
-                clist_clear(macro_name);
-                free(macro_name_array);
-            }
-        }
+void read_macro_content(char * ptr_in_line, clist macro_name, clist macro_content) {
+    if(strncmp(ENDMACRO, ptr_in_line, 7) == 0) {
+        clist_clear(macro_name);
+    } else {
+        clist_append_chars(macro_content, ptr_in_line);
     }
-    ptable_free(macrosTable, free);
-    clist_free(macro_name);
-    return 0;
+}
+
+Bool read_macro_name(char * ptr_in_line, clist macro_name, clist * macro_content, ptable macros_table) {
+    char *macro_name_array;
+    clist_read_string(macro_name, ptr_in_line);
+    macro_name_array = clist_to_string(macro_name);
+    if(is_keyword(macro_name_array)) {
+        ERROR("macro name is a keyword", 0);
+        free(macro_name_array);
+        ptable_free(macros_table, free);
+        clist_free(macro_name);
+        return False;
+    }
+    *macro_content = create_clist();
+    DEBUG_1PARAM_STR("found macro: ", macro_name_array);
+    ptable_insert(macros_table, macro_name_array, *macro_content);
+    free(macro_name_array);
+    return True;
 }

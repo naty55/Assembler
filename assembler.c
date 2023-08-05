@@ -43,19 +43,20 @@ void build_image(FILE * source_file, plist instruction_image, plist data_image, 
     char *ptr_in_line;
     int line_index = 0;
     while(fgets(line, MAX_LINE_SIZE, source_file) != NULL) {
+        Bool line_has_error = False;
         symbol sym = NULL;
         line_index++;
         DEBUG_LINE(line, line_index);
-        ptr_in_line = read_label(line, line_index, symbols_table, &sym, plist_get_length(instruction_image), error);
+        ptr_in_line = read_label(line, line_index, symbols_table, &sym, plist_get_length(instruction_image), &line_has_error);
         if(is_line_comment_or_blank(ptr_in_line)) {
             continue;
         }
         if(is_line_data_instruction(ptr_in_line)) {
-            handle_data(ptr_in_line, line_index, data_image, symbols_table, sym, entries, externals, error);
+            handle_data(ptr_in_line, line_index, data_image, symbols_table, sym, entries, externals, &line_has_error);
         } else {
-            handle_operation(ptr_in_line, line_index, instruction_image, symbols_table, missing_symbols, error);
+            handle_operation(ptr_in_line, line_index, instruction_image, symbols_table, missing_symbols, &line_has_error);
         }
-        
+        *error |= line_has_error;
     }
 }
 
@@ -112,74 +113,82 @@ void handle_string(char * ptr_in_line, int line_index, symbol sym, plist data_im
 }
 
 void handle_operation(char * ptr_in_line, int line_index, plist instruciton_image, ptable symbols_table, ptable missing_symbols, Bool * error) {
-    i_line first_line = create_iline(plist_get_length(instruciton_image) + IMAGE_OFFSET_SIZE);
-    i_line second_line = NULL;
-    i_line third_line = NULL;
-    Bool current_line_has_error = False;
     operation op;
-    Bool read_param;
-    clist param1 = create_clist();
-    address_type param1_type;
-    int param1_data;
-    clist param2 = create_clist();
-    address_type param2_type;
-    int param2_data;
+    Bool read_param = False;
+    clist param1 = NULL, param2 = NULL;
+    address_type param1_type, param2_type;
+    int param1_data, param2_data;
     short expected_params_to_read;
 
     ptr_in_line = read_operation(ptr_in_line, &op, line_index, error);
     ptr_in_line = skip_spaces(ptr_in_line);
     expected_params_to_read = get_params_to_read(op);
     if(0 < expected_params_to_read) {
+        param1 = create_clist();
         ptr_in_line = read_next_param(ptr_in_line, param1, &read_param);
         DEBUG_1PARAM_STR("Param 1:", clist_to_string(param1));
         param1_type = validate_param(param1, &param1_data, line_index, symbols_table, error);
+        IF_ERROR_RETURN(error);
     }
 
     if(1 < expected_params_to_read) {
+        param2 = create_clist();
         ptr_in_line = get_next_param(ptr_in_line, param2, &read_param, line_index, error);
         DEBUG_1PARAM_STR("Param 2:", clist_to_string(param2));
         param2_type = validate_param(param2, &param2_data, line_index, symbols_table, error);
+        IF_ERROR_RETURN(error);
     }
     
     check_for_extra_text(ptr_in_line, line_index, error);
-    *error = *error || current_line_has_error;
-    IF_ERROR_RETURN(&current_line_has_error);
-    
-    i_line_set_operation(first_line, op);
+    IF_ERROR_RETURN(error);
+
     if(expected_params_to_read == 1) {
         if(!validate_op_and_target_param(op, param1_type)) {
-            HANDLE_ERROR("incorrect param type", line_index, &current_line_has_error);
+            HANDLE_ERROR("incorrect param type", line_index, error);
         }
-        i_line_set_target_address_type(first_line, param1_type);
-        second_line = create_iline(plist_get_length(instruciton_image) + 1 + IMAGE_OFFSET_SIZE);
-        handle_param(param1, param1_data, param1_type, second_line, True, missing_symbols, line_index);
-    
     }
     if(expected_params_to_read == 2) {
         if(!validate_op_and_source_param(op, param1_type)) {
-            HANDLE_ERROR("incorrect param type", line_index, &current_line_has_error);
+            HANDLE_ERROR("incorrect param type", line_index, error);
         }
         if(!validate_op_and_target_param(op, param2_type)) {
-            HANDLE_ERROR("incorrect param type", line_index, &current_line_has_error);
+            HANDLE_ERROR("incorrect param type", line_index, error);
         }
+    }
+    DEBUG_1PARAM_INT("count params: ", expected_params_to_read);
+    IF_ERROR_RETURN(error);
+    build_assembly_lines(instruciton_image, missing_symbols, op, param1, param2, param1_type, param2_type, param1_data, param2_data, line_index, expected_params_to_read);
+}
+
+void build_assembly_lines(plist instruction_image, ptable missing_symbols, operation op, clist param1, clist param2, address_type param1_type, address_type param2_type, int param1_data, int param2_data, int line_index, int param_count) {
+    i_line first_line = create_iline(plist_get_length(instruction_image) + IMAGE_OFFSET_SIZE);
+    i_line second_line = NULL;
+    i_line third_line = NULL;
+    i_line_set_operation(first_line, op);
+    if(param_count == 1) { /* Only target param*/
+        i_line_set_target_address_type(first_line, param1_type);
+        second_line = create_iline(plist_get_length(instruction_image) + 1 + IMAGE_OFFSET_SIZE);
+        handle_param(param1, param1_data, param1_type, second_line, True, missing_symbols, line_index);
+    
+    } 
+    if (param_count == 2) {
         i_line_set_source_address_type(first_line, param1_type);
         i_line_set_target_address_type(first_line, param2_type);
         if(param1_type == param2_type && param1_type == IMM_REG_ADDR) {
-            second_line = create_iline(plist_get_length(instruciton_image) + 1 + IMAGE_OFFSET_SIZE);
+            second_line = create_iline(plist_get_length(instruction_image) + 1 + IMAGE_OFFSET_SIZE);
             handle_param(param1, param1_data, param1_type, second_line, False, missing_symbols, line_index);
             handle_param(param2, param2_data, param2_type, second_line, True, missing_symbols, line_index);
         } else {
-            second_line = create_iline(plist_get_length(instruciton_image) + 1 + IMAGE_OFFSET_SIZE);
-            third_line  = create_iline(plist_get_length(instruciton_image) + 2 + IMAGE_OFFSET_SIZE);
+            second_line = create_iline(plist_get_length(instruction_image) + 1 + IMAGE_OFFSET_SIZE);
+            third_line  = create_iline(plist_get_length(instruction_image) + 2 + IMAGE_OFFSET_SIZE);
             handle_param(param1, param1_data, param1_type, second_line, False, missing_symbols, line_index);
             handle_param(param2, param2_data, param2_type, third_line, True, missing_symbols, line_index);
         }
     }
 
-    plist_append(instruciton_image, first_line);
-    plist_append_if_not_null(instruciton_image, second_line);
-    plist_append_if_not_null(instruciton_image, third_line);
-
+    plist_append(instruction_image, first_line);
+    plist_append_if_not_null(instruction_image, second_line);
+    plist_append_if_not_null(instruction_image, third_line);
 }
 
 void handle_param(clist param, int param_data, address_type param_type, i_line line, Bool is_target, ptable missing_symbols, int line_index) {
@@ -249,7 +258,9 @@ void fill_missing_labels_addresses(ptable missing_symbols, ptable symbols_table,
 
 void validate_entries(ptable entries, ptable symbols_table, Bool * error) {
     int i;
-    plist keys = ptable_get_keys(entries);
+    plist keys;
+    IF_ERROR_RETURN(error);
+    keys = ptable_get_keys(entries);
     for(i=0; i < plist_get_length(keys); i++) {
         char * entry = plist_get(keys, i);
         symbol sym = ptable_get(symbols_table, entry);
