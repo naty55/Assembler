@@ -23,7 +23,7 @@
         exit(EXIT_FAILURE);
 
 
-/*#define DEBUG_FLAG */
+#define DEBUG_FLAG 
 #ifdef DEBUG_FLAG 
 #define DEBUG_LINE(line, line_index) printf("[DEBUG] %d\t: %s\n", line_index, line);
 #define DEBUG(message) printf("[DEBUG] %s \n", message); 

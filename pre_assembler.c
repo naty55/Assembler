@@ -31,13 +31,19 @@ Bool pre_assemble(char * filename) {
 }
 
 Bool remove_macros(FILE *input_file, FILE* source_file) {
+    int line_index = 1;
     char line[MAX_LINE_SIZE];
     char *ptr_in_line;
     clist macro_name = create_clist(); /* If we are reading macro - it's not empty */
     clist macro_content;
     ptable macros_table = create_ptable();
     char *macro_name_array;
-    while(fgets(line, MAX_LINE_SIZE, input_file) != NULL) {
+    line[MAX_LINE_SIZE - 1] = 0;
+    while(fgets(line, MAX_LINE_SIZE + 1, input_file) != NULL) {
+        if(line[MAX_LINE_SIZE - 1] != 0) {
+            ERROR("too long line", line_index);
+            return False;
+        }
         ptr_in_line = skip_spaces(line);
         if(!clist_is_empty(macro_name)) { /* We are reading macro - so read its content */
             read_macro_content(line, macro_name, macro_content);
@@ -62,7 +68,8 @@ Bool remove_macros(FILE *input_file, FILE* source_file) {
             fputs(line, source_file);
         }
         clist_clear(macro_name);
-        free(macro_name_array);   
+        free(macro_name_array); 
+        line_index++;  
     }
     
     ptable_free(macros_table, free);
