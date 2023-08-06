@@ -102,18 +102,20 @@ void handle_string(char * ptr_in_line, int line_index, symbol sym, plist data_im
         symbol_set_is_set(sym, False);
     }
     read_string(ptr_in_line, line_index, str, error);
-    IF_ERROR_RETURN(error);
+    if(*error) { /*if error str is freed in read_string */
+        return;
+    }
     for (i = 0; i < clist_get_length(str); i++) {
         i_line data_line = create_iline(plist_get_length(data_image));
         i_line_set_char(data_line, clist_get(str, i));
         plist_append(data_image, data_line);
     }
     plist_append(data_image, create_iline(plist_get_length(data_image)));
-    free(str);
+    clist_free(str);
 }
 
 void handle_operation(char * ptr_in_line, int line_index, plist instruciton_image, ptable symbols_table, ptable missing_symbols, Bool * error) {
-    operation op;
+    operation op = 0;
     Bool read_param = False;
     clist param1 = NULL, param2 = NULL;
     address_type param1_type, param2_type;
@@ -121,6 +123,7 @@ void handle_operation(char * ptr_in_line, int line_index, plist instruciton_imag
     short expected_params_to_read;
 
     ptr_in_line = read_operation(ptr_in_line, &op, line_index, error);
+    IF_ERROR_RETURN(error);
     ptr_in_line = skip_spaces(ptr_in_line);
     expected_params_to_read = get_params_to_read(op);
     if(0 < expected_params_to_read) {
@@ -128,7 +131,10 @@ void handle_operation(char * ptr_in_line, int line_index, plist instruciton_imag
         ptr_in_line = read_next_param(ptr_in_line, param1, &read_param);
         DEBUG_1PARAM_STR("Param 1:", clist_to_string(param1));
         param1_type = validate_param(param1, &param1_data, line_index, symbols_table, error);
-        IF_ERROR_RETURN(error);
+        if(*error) {
+            clist_free(param1);
+            return;
+        }
     }
 
     if(1 < expected_params_to_read) {
@@ -136,11 +142,19 @@ void handle_operation(char * ptr_in_line, int line_index, plist instruciton_imag
         ptr_in_line = get_next_param(ptr_in_line, param2, &read_param, line_index, error);
         DEBUG_1PARAM_STR("Param 2:", clist_to_string(param2));
         param2_type = validate_param(param2, &param2_data, line_index, symbols_table, error);
-        IF_ERROR_RETURN(error);
+        if(*error) {
+            clist_free(param1);
+            clist_free(param2);
+            return;
+        }
     }
     
     check_for_extra_text(ptr_in_line, line_index, error);
-    IF_ERROR_RETURN(error);
+    if(*error) {
+        clist_free(param1);
+        clist_free(param2);
+        return;
+    }
 
     if(expected_params_to_read == 1) {
         if(!validate_op_and_target_param(op, param1_type)) {
@@ -156,8 +170,14 @@ void handle_operation(char * ptr_in_line, int line_index, plist instruciton_imag
         }
     }
     DEBUG_1PARAM_INT("count params: ", expected_params_to_read);
-    IF_ERROR_RETURN(error);
+    if(*error) {
+        clist_free(param1);
+        clist_free(param2);
+        return;
+    }
     build_assembly_lines(instruciton_image, missing_symbols, op, param1, param2, param1_type, param2_type, param1_data, param2_data, line_index, expected_params_to_read);
+    clist_free(param1);
+    clist_free(param2);
 }
 
 void build_assembly_lines(plist instruction_image, ptable missing_symbols, operation op, clist param1, clist param2, address_type param1_type, address_type param2_type, int param1_data, int param2_data, int line_index, int param_count) {
@@ -253,7 +273,7 @@ void fill_missing_labels_addresses(ptable missing_symbols, ptable symbols_table,
             
         }
     }
-    plist_free(keys);
+    plist_free_all(keys);
 }
 
 void validate_entries(ptable entries, ptable symbols_table, Bool * error) {
@@ -272,15 +292,15 @@ void validate_entries(ptable entries, ptable symbols_table, Bool * error) {
             HANDLE_ERROR_ONE_PARAM("entry label is not found, entry: ", entry, -1, error);
         }
     }
-    free(keys);
+    plist_free_all(keys);
 }
 
 void free_objects(plist instruction_image, plist data_image, ptable symbols_table, ptable entries, plist externals, ptable missing_symbols) {
-    plist_free(instruction_image);
-    plist_free(data_image);
+    plist_free_all(instruction_image);
+    plist_free_all(data_image);
     ptable_free(symbols_table, free);
     ptable_free(entries, free);
-    plist_free(externals);
-    ptable_free(missing_symbols, free);
+    plist_free_all(externals);
+    ptable_free(missing_symbols, (freeFunction)plist_free);
 
 }

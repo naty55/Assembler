@@ -76,8 +76,10 @@ Bool clist_is_empty(clist l) {
 }
 
 void clist_free(clist l) {
-    free(l->data);
-    free(l);
+    if(l != NULL) {    
+        free(l->data);
+        free(l);
+    }
 }
 
 struct PointerList {
@@ -119,10 +121,18 @@ unsigned long plist_get_length(plist l) {
 Bool plist_is_empty(plist l) {
     return (Bool)(l->length == 0);
 }
-void plist_free(plist l) {
+void plist_free_all(plist l) {
     int i;
     for (i = 0; i < l->length; i++) {
         free(l->data[i]);
     }
+    free(l->data);
     free(l);
+}
+
+void plist_free(plist l) {
+    if(l != NULL) {
+        free(l->data);
+        free(l);
+    }
 }

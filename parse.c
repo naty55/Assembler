@@ -146,9 +146,11 @@ address_type validate_param(clist param, int * param_data, int line_index, ptabl
     param_str = clist_to_string(param);
     if(string_to_number(param_str, param_data)) {
         DEBUG_1PARAM_INT("Found Data:", *param_data);
+        free(param_str);
         return ABS_ADDR;
     }
     if(is_param_label(param)) {
+        free(param_str);
         return IMM_ADDR;
     }
     HANDLE_ERROR("unknown parameter type", line_index, error);
@@ -260,10 +262,12 @@ void read_string(char * ptr_in_line, int line_index, clist str, Bool *error) {
         ptr_in_line++;
     } else {
         HANDLE_ERROR("Invalid string, missing '\"' after string", line_index, error);
+        clist_free(str);
         return;
     }
     if(!is_str_empty(ptr_in_line)){
         HANDLE_ERROR("Unideintified text after .string instruction", line_index, error);
+        clist_free(str);
         return;
     }
 }
@@ -309,8 +313,8 @@ void read_externals(char * ptr_in_line, ptable symbols_table, int line_index, pl
                 } else {
                     HANDLE_ERROR("already defined symbol", line_index, error);
                 }
+                free(param_str);
             }
-            
         } else {
             if(param_counter == 0){
                 HANDLE_ERROR("No symbols after .extern instruction", line_index, error);

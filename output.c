@@ -43,6 +43,7 @@ Bool write_ent(ptable entries, ptable symbols_table, char *filename) {
     FILE * ent_file;
 
     if(plist_get_length(keys) == 0) {
+        plist_free_all(keys);
         return True;
     }
 
@@ -59,7 +60,7 @@ Bool write_ent(ptable entries, ptable symbols_table, char *filename) {
     }
     fclose(ent_file);
     free(ent_filename);
-    free(keys);
+    plist_free_all(keys);
     return True;
 }
 Bool write_obj(plist inst_iamge, plist data_image, char *filename) {

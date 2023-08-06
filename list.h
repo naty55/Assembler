@@ -28,6 +28,7 @@ void* plist_append_if_not_null(plist l, void* item);
 void* plist_get(plist l, int i);
 unsigned long plist_get_length(plist l);
 Bool plist_is_empty(plist l);
+void plist_free_all(plist l);
 void plist_free(plist l);
 
 #endif
