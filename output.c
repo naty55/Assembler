@@ -15,11 +15,10 @@ Bool write_ext(plist externals, ptable missing_symbols, char *filename) {
     if(plist_get_length(externals) == 0) {
         return True;
     }
-    INFO("Write externals file");
-
     ext_filename = concat(filename, ".ext");
+    INFO_1PARAM_STR("Write externals file", ext_filename);
+
     ext_file = fopen(ext_filename, "w");
-    
     for (i = 0; i < plist_get_length(externals); i++) {
         char * label = plist_get(externals, i);
         plist lines = ptable_get(missing_symbols, label);
@@ -47,12 +46,11 @@ Bool write_ent(ptable entries, ptable symbols_table, char *filename) {
         return True;
     }
 
-    INFO("Write entries file");
-
     i = 0;
     ent_filename = concat(filename, ".ent");
+    INFO_1PARAM_STR("Write entries file", ent_filename);
+
     ent_file = fopen(ent_filename, "w");
-    
     for (;i < plist_get_length(keys); i++) {
         char * label = plist_get(keys, i);
         symbol sym = ptable_get(symbols_table, label);
@@ -68,7 +66,7 @@ Bool write_obj(plist inst_iamge, plist data_image, char *filename) {
     int i = 0;
     char data[2];
     FILE * obj_file = fopen(obj_filename, "w");
-    INFO("Write object file");
+    INFO_1PARAM_STR("Write object file", obj_filename);
     fprintf(obj_file, "%ld\t%ld\n", plist_get_length(inst_iamge), plist_get_length(data_image));
     for (; i < plist_get_length(inst_iamge); i++) {
         convertToBase64(i_line_get_data(plist_get(inst_iamge, i)), data);

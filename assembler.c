@@ -48,7 +48,7 @@ void build_image(FILE * source_file, plist instruction_image, plist data_image, 
         line_index++;
         DEBUG_LINE(line, line_index);
         ptr_in_line = read_label(line, line_index, symbols_table, &sym, plist_get_length(instruction_image), &line_has_error);
-        if(is_line_comment_or_blank(ptr_in_line)) {
+        if(is_line_comment_or_blank(ptr_in_line) || line_has_error) {
             continue;
         }
         if(is_line_data_instruction(ptr_in_line)) {
@@ -285,7 +285,7 @@ void validate_entries(ptable entries, ptable symbols_table, Bool * error) {
         char * entry = plist_get(keys, i);
         symbol sym = ptable_get(symbols_table, entry);
         if(sym != NULL) {
-            if(symbol_get_encoding(sym) == E) {
+            if(symbol_get_encoding(sym) == External) {
                 HANDLE_ERROR_ONE_PARAM("entry label can't be external, entry: ", entry, -1, error);
             }
         } else {

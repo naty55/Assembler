@@ -53,6 +53,10 @@ address_type validate_param(clist param, int *param_data, int line_index, ptable
 */
 Bool is_param_label(clist param);
 /**
+ * 
+*/
+Bool is_param_label1(char * param);
+/**
  * Read the data instruction type (.entry, .data, .string, .extern)
 */
 char * read_data_instruction(char * ptr_in_line, data_instruction * inst, int line_index, Bool *error);
@@ -72,5 +76,6 @@ void read_externals(char * ptr_in_line, ptable symbols_table, int line_index, pl
  * read .entry directive
 */
 void read_entries(char * ptr_in_line, ptable entries, int line_index, Bool *error);
+
 
 #endif

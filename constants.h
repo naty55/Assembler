@@ -11,9 +11,9 @@
  * Encoding types
 */
 typedef enum {
-    A = 0, /*Absolute*/
-    E = 1, /*External*/
-    R = 2  /*Relocatable*/
+    Absolute = 0, /*Absolute*/
+    External = 1, /*External*/
+    Relocatable = 2  /*Relocatable*/
 } encoding;
 /**
  * Opcodes 

@@ -29,6 +29,9 @@ Bool pre_assemble(char * filename) {
         return False;
     }
     is_successful = remove_macros(as_file, am_file);
+    if(!is_successful) {
+        remove(am_filename);
+    }
     free(as_filename);
     free(am_filename);
     fclose(as_file);
@@ -59,7 +62,7 @@ Bool remove_macros(FILE *input_file, FILE* source_file) {
         }
         
         if(strncmp(MACRO, ptr_in_line, 4) == 0) { /* Found macro declaration */
-            if(!read_macro_name(ptr_in_line + 4, macro_name, &macro_content, macros_table)) {
+            if(!read_macro_name(ptr_in_line + 4, macro_name, &macro_content, macros_table, line_index)) {
                 ptable_free(macros_table, free);
                 clist_free(macro_name);
                 return False;
@@ -94,12 +97,12 @@ void read_macro_content(char * ptr_in_line, clist macro_name, clist macro_conten
     }
 }
 
-Bool read_macro_name(char * ptr_in_line, clist macro_name, clist * macro_content, ptable macros_table) {
+Bool read_macro_name(char * ptr_in_line, clist macro_name, clist * macro_content, ptable macros_table, int line_index) {
     char *macro_name_array;
     clist_read_string(macro_name, ptr_in_line);
     macro_name_array = clist_to_string(macro_name);
     if(is_keyword(macro_name_array)) {
-        ERROR("macro name is a keyword", 0);
+        ERROR("macro name is a keyword", line_index);
         free(macro_name_array);
         return False;
     }

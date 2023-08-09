@@ -11,7 +11,7 @@ typedef struct Symbol *symbol;
 /**
  * Create symbol - set is_set to False.
 */
-symbol create_symbol();
+symbol create_symbol(unsigned declared_at_assembly_line);
 /**
  * get address in the binary code of the symbol (if external return 0)
 */
@@ -44,5 +44,10 @@ void symbol_set_is_data(symbol sym, Bool is_data);
  * set is symbol set.
 */
 void symbol_set_is_set(symbol sym, Bool is_set);
+
+/**
+ * Get the line where symbol is declared
+*/
+unsigned long symbol_get_declared_at_line(symbol sym);
 
 #endif

@@ -4,7 +4,6 @@
 /**
  * i_line represent binary line in the code 
  * It has also metadata like the index line in the final image and 
- * the corresponding assembly code line 
 */
 typedef struct InstructionLine *i_line; 
 /**

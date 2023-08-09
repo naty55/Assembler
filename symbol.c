@@ -8,11 +8,13 @@ struct Symbol {
     encoding encode;
     Bool is_data;
     Bool is_set;
+    unsigned long declared_at_assembly_line; /* Assembly line where the symbol is declared*/
 };
 
-symbol create_symbol() {
+symbol create_symbol(unsigned declared_at_assembly_line) {
     symbol sym = malloc_safe(sizeof(struct Symbol));
     sym->is_set = False;
+    sym->declared_at_assembly_line = declared_at_assembly_line;
     return sym;
 }
 
@@ -22,6 +24,10 @@ unsigned int symbol_get_address(symbol sym) {
 
 encoding symbol_get_encoding(symbol sym) {
     return sym->encode;
+}
+
+unsigned long symbol_get_declared_at_line(symbol sym) {
+    return sym->declared_at_assembly_line;
 }
 
 Bool symbol_is_data(symbol sym) {
