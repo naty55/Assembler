@@ -21,7 +21,7 @@ We have couple of objects generated for every assembly file
 - externals (plist<string>): list of all externals, to print them later to the `.ext` file
 
 ### Debugging logs and errors
-Thorugh the assemling process the assembler prints logs, for debugging we have `DEBUG_FLAG` in `error.h` 
+Thorugh the assemling process the assembler prints logs, for debugging we have `DEBUG_FLAG` in `error.h` logs ar epossible to contain code line index, which refer to the `.am` file.
 
 ## Build and run
 ### Build
