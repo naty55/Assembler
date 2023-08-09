@@ -49,7 +49,7 @@ clean-test:
 	rm -f ./tests/test*.obj ./tests/test*.am ./tests/test*.ent ./tests/test*.ext 
 
 test: clean-test assembler
-	./assembler tests/test tests/test2 tests/test3 tests/test4 tests/test5 tests/test6 tests/test7 tests/test8
+	./assembler tests/test tests/test2 tests/test3 tests/test4 tests/test5 tests/test6 tests/test7 tests/test8 tests/pre_assembler_error tests/pre_assembler_error2
 
 lines-count:
 	git ls-files | xargs wc -l

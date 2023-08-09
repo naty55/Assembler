@@ -3,5 +3,5 @@
 .entry HELLO
 lea HELLO,   @r2
 HELLO: stop
-STR: .string "HHELLO world!\n"
+STR: .string "HELLO world!\n"
 .extern STR1
