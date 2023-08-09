@@ -15,7 +15,7 @@ void assemble(char * filename) {
     char * am_filename = concat(filename, ".am");
     FILE * am_file = fopen(am_filename, "r");
     if(am_file != NULL) {
-        build(am_file, filename);
+        build_full_image(am_file, filename);
         fclose(am_file);
     } else {
         FILE_ERROR(am_filename);
@@ -23,7 +23,7 @@ void assemble(char * filename) {
     free(am_filename);
 }
 
-void build(FILE * am_file, char * filename) {
+void build_full_image(FILE * am_file, char * filename) {
     plist instruction_image = create_plist();
     plist data_image = create_plist();
     ptable symbols_table = create_ptable();

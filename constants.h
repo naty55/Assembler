@@ -7,13 +7,17 @@
 #define MACRO "mcro"
 #define ENDMACRO "endmcro"
 #define IMAGE_OFFSET_SIZE 100
-
+/**
+ * Encoding types
+*/
 typedef enum {
     A = 0, /*Absolute*/
     E = 1, /*External*/
     R = 2  /*Relocatable*/
 } encoding;
-
+/**
+ * Opcodes 
+*/
 typedef enum {
     MOV = 0,
     CMP = 1,
@@ -32,13 +36,17 @@ typedef enum {
     RTS = 14,
     STP = 15
 } operation;
-
+/**
+ * Addressing types 
+*/
 typedef enum {
     ABS_ADDR = 1,
     IMM_ADDR = 3,
     IMM_REG_ADDR = 5
 } address_type;
-
+/**
+ * Registers 
+*/
 typedef enum {
     R0 = 0,
     R1 = 1,
@@ -49,7 +57,9 @@ typedef enum {
     R6 = 6,
     R7 = 7
 } register_name;
-
+/**
+ * Data instructions types
+*/
 typedef enum {
     STRING,
     DATA,
@@ -59,7 +69,17 @@ typedef enum {
 
 
 short get_params_to_read(operation op);
+
+/**
+ * Validate param type matches the opernd code as target param
+*/
 Bool validate_op_and_target_param(operation op, address_type param_type);
+/**
+ * Validate param type matches the opernd code as sourde param
+*/
 Bool validate_op_and_source_param(operation op, address_type param_type);
+/**
+ * Return True if string a saved keyword (operand code)
+*/
 Bool is_keyword(char * str);
 #endif

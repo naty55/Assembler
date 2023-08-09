@@ -6,6 +6,7 @@
 struct InstructionLine {
     unsigned short data;
     unsigned long binary_line_index;
+    unsigned long assembly_line_index;
 };
 i_line create_iline(unsigned long binaty_line_index) {
     i_line il = malloc_safe(sizeof(struct InstructionLine));

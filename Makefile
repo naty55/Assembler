@@ -50,3 +50,6 @@ clean-test:
 
 test: clean-test assembler
 	./assembler tests/test tests/test2 tests/test3 tests/test4 tests/test5 tests/test6 tests/test7 tests/test8
+
+lines-count:
+	git ls-files | xargs wc -l
