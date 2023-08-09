@@ -46,7 +46,6 @@ Bool remove_macros(FILE *input_file, FILE* source_file) {
     clist macro_name = create_clist(); /* If we are reading macro - it's not empty */
     clist macro_content;
     ptable macros_table = create_ptable();
-    char *macro_name_array;
     line[MAX_LINE_SIZE - 1] = 0;
     while(fgets(line, MAX_LINE_SIZE + 1, input_file) != NULL) {
         if(line[MAX_LINE_SIZE - 1] != 0) {
@@ -69,22 +68,11 @@ Bool remove_macros(FILE *input_file, FILE* source_file) {
             }
             continue;
         } 
-        clist_read_string(macro_name, ptr_in_line);
-        macro_name_array = clist_to_string(macro_name);
-        macro_content = ptable_get(macros_table, macro_name_array);
-        if(macro_content != NULL) {
-            char *content_array = clist_to_string(macro_content);
-            fputs(content_array, source_file);
-            free(content_array);
-        } else {
-            fputs(line, source_file);
-        }
-        clist_clear(macro_name);
-        free(macro_name_array); 
+        write_line(ptr_in_line, macro_name, macro_content, macros_table, line, source_file);
         line_index++;  
     }
     
-    ptable_free(macros_table, free);
+    ptable_free(macros_table, (freeFunction)clist_free);
     clist_free(macro_name);
     return True;
 }
@@ -111,4 +99,20 @@ Bool read_macro_name(char * ptr_in_line, clist macro_name, clist * macro_content
     ptable_insert(macros_table, macro_name_array, *macro_content);
     free(macro_name_array);
     return True;
+}
+
+void write_line(char * ptr_in_line, clist macro_name, clist macro_content, ptable macros_table, char line[], FILE * source_file) {
+    char *macro_name_array;
+    clist_read_string(macro_name, ptr_in_line);
+    macro_name_array = clist_to_string(macro_name);
+    macro_content = ptable_get(macros_table, macro_name_array);
+    if(macro_content != NULL) {
+        char *content_array = clist_to_string(macro_content);
+        fputs(content_array, source_file);
+        free(content_array);
+    } else {
+        fputs(line, source_file);
+    }
+    clist_clear(macro_name);
+    free(macro_name_array); 
 }
