@@ -1,3 +1,4 @@
+#include "output.h"
 #include "util.h"
 #include "list.h"
 #include "error.h"
@@ -12,9 +13,10 @@ Bool write_ext(plist externals, ptable missing_symbols, char *filename) {
     int i,j;
     char * ext_filename;
     FILE * ext_file;
-    if(plist_get_length(externals) == 0) {
+    if(!should_write_ext_file(externals, missing_symbols)) {
         return True;
     }
+    
     ext_filename = concat(filename, ".ext");
     INFO_1PARAM_STR("Write externals file", ext_filename);
 
@@ -29,7 +31,6 @@ Bool write_ext(plist externals, ptable missing_symbols, char *filename) {
             i_line line = plist_get(lines, j);
             fprintf(ext_file, "%s\t%ld\n", label, i_line_get_binary_line_index(line));
         }
-        
     }
     fclose(ext_file);
     free(ext_filename);
@@ -87,4 +88,16 @@ void write_result_files(plist inst_image, plist data_image, ptable symbols_table
     write_ext(externals, missing_symbols, filename);
     write_ent(entries, symbols_table, filename);
     write_obj(inst_image, data_image, filename);
+}
+
+Bool should_write_ext_file(plist externals, ptable missing_symbols) {
+    int i;
+    for (i = 0; i < plist_get_length(externals); i++) {
+        char * label = plist_get(externals, i);
+        plist lines = ptable_get(missing_symbols, label);
+        if(lines != NULL) {
+            return True;
+        } 
+    }
+    return False;
 }

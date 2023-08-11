@@ -1,4 +1,8 @@
 ;file ps.as
+mcro A   
+mov @r5 , LENGTH
+endmcro
+A 
 .entry LENGTH
 .extern W
 MAIN: mov @r3 ,LENGTH

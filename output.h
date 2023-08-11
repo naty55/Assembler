@@ -19,5 +19,8 @@ Bool write_obj(plist inst_iamge, plist data_image, char *filename);
  * Write all result file of assembly process
 */
 void write_result_files(plist inst_image, plist data_image, ptable symbols_table, ptable missing_symbols, plist externals, ptable entries, char *filename, Bool *error);
-
+/**
+ * Return true if there is a usage of at least one external symbol (and therefore we need to write ext file)
+*/
+ Bool should_write_ext_file(plist externals, ptable missing_symbols);
 #endif
