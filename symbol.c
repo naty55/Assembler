@@ -26,7 +26,7 @@ encoding symbol_get_encoding(symbol sym) {
     return sym->encode;
 }
 
-unsigned long symbol_get_declared_at_line(symbol sym) {
+unsigned int symbol_get_declared_at_line(symbol sym) {
     return sym->declared_at_assembly_line;
 }
 

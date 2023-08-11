@@ -11,8 +11,7 @@
 #include <string.h>
 
 Bool is_line_comment_or_blank(char * ptr_in_line) {
-    ptr_in_line = skip_spaces(ptr_in_line);
-    return (Bool)(*ptr_in_line == ';' || *ptr_in_line == '\0');
+    return (Bool)(*ptr_in_line == ';' || *skip_spaces(ptr_in_line) == '\0');
 }
 
 Bool is_line_data_instruction(char * ptr_in_line) {
@@ -56,6 +55,7 @@ char * read_operation(char * ptr_in_line, operation * op, int line_index, Bool *
         *op = STP;
     } else {
         HANDLE_ERROR("unkonwn operation", line_index, error);
+        return ptr_in_line + 3;
     }
     ptr_in_line += 3;
     if(!isspace(*ptr_in_line) && *ptr_in_line != '\n' && *ptr_in_line != '\0') {

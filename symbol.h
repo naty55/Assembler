@@ -48,6 +48,6 @@ void symbol_set_is_set(symbol sym, Bool is_set);
 /**
  * Get the line where symbol is declared
 */
-unsigned long symbol_get_declared_at_line(symbol sym);
+unsigned int symbol_get_declared_at_line(symbol sym);
 
 #endif

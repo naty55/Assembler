@@ -47,8 +47,13 @@ void build_image(FILE * source_file, plist instruction_image, plist data_image, 
         symbol sym = NULL;
         line_index++;
         DEBUG_LINE(line, line_index);
-        ptr_in_line = read_label(line, line_index, symbols_table, &sym, plist_get_length(instruction_image), &line_has_error);
-        if(is_line_comment_or_blank(ptr_in_line) || line_has_error) {
+        ptr_in_line = line;
+        if(is_line_comment_or_blank(ptr_in_line)) {
+            printf("is comment");
+            continue;
+        }
+        ptr_in_line = read_label(ptr_in_line, line_index, symbols_table, &sym, plist_get_length(instruction_image), &line_has_error);
+        if(line_has_error) {
             continue;
         }
         if(is_line_data_instruction(ptr_in_line)) {
@@ -251,7 +256,7 @@ void fill_missing_labels_addresses(ptable missing_symbols, ptable symbols_table,
         char * symbol_name = plist_get(keys, i);
         symbol sym = ptable_get(symbols_table, symbol_name);
         if(sym == NULL) {
-            HANDLE_ERROR_ONE_PARAM("Can't find symbol ", symbol_name, -1, error);
+            HANDLE_ERROR_ONE_PARAM("Can't find symbol ", symbol_name, symbol_get_declared_at_line(sym), error);
         } else {
             plist lines = ptable_get(missing_symbols, symbol_name);
             int j = 0;
@@ -286,7 +291,7 @@ void validate_entries(ptable entries, ptable symbols_table, Bool * error) {
         symbol sym = ptable_get(symbols_table, entry);
         if(sym != NULL) {
             if(symbol_get_encoding(sym) == External) {
-                HANDLE_ERROR_ONE_PARAM("entry label can't be external, entry: ", entry, -1, error);
+                HANDLE_ERROR_ONE_PARAM("entry label can't be external, entry: ", entry, symbol_get_declared_at_line(sym), error);
             }
         } else {
             HANDLE_ERROR_ONE_PARAM("entry label is not found, entry: ", entry, -1, error);

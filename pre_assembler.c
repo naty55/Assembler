@@ -15,6 +15,7 @@ Bool pre_assemble(char * filename) {
     char * as_filename = concat(filename, ".as");
     char * am_filename = concat(filename, ".am");
     as_file = fopen(as_filename, "r");
+    INFO_1PARAM_STR("Write source file", am_filename);
     if(as_file == NULL) {
         FILE_ERROR(as_filename);
         free(as_filename);

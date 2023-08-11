@@ -36,4 +36,4 @@ after build run `make test` to run the assembler against all files in `./test` d
 2. Instruction of `.string` or `.data` without label will result warning as the data is not accessbiale
 3. We check 2 types of errors in macros, (a) macroname is not save (b) line length is no longer than 80 chars. when we have such error we don't generate the `.am` file and skipping to the next file (if any), other than that pre-assembler will not handle errors and we assume the nacros are defined correctly (page 35 in course guide)
 4. When we have data overfolow the assembler will ouput a warning and set the value to 0
-5. Comment `;` after spaces will be considered as comment for example `    ;commen` will be treated as comment line, on the other hand  `h ;comment` will result an error
+5. Char `;` after spaces is not considered as comment for example `    ;comment` will not be treated as comment line (The more intuitive approach is to treat it as comment - but I'm not sure it's according to the course guide)
