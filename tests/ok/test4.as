@@ -1,26 +1,18 @@
-.entry LENGTH
-.extern W
-MAIN: mov @r3 ,LENGTH
-mcro m2
-    sub @r7, LENGTH
-    bne STR
-endmcro
-LOOP: jmp L1
-prn -5
-bne W
-sub @r1, @r4
-mcro m1 
-    sub @r1, @r4
-    bne END
-endmcro
-m2
-bne L3
-L1: inc K
-.entry LOOP
-jmp W
-m1
-END: stop
-STR: .string "abcdef"
-LENGTH: .data 6,-9,15
-K: .data 22
-.extern L3
+; More complex tests with all operations
+.entry COMPLEXSTART
+.extern COMPLEXFUNC
+COMPLEXMAIN: mov @r1, @r2
+LOOPA:       cmp @r3, @r4
+              bne ENDLOOPA
+              add @r5, @r6
+              sub @r7, @r0
+              jsr LOOPB
+              prn STR10
+              lea DATAA, @r5
+LOOPB:       clr @r1
+              not @r2
+COMPLEXSTART:  rts
+ENDLOOPA:    stop
+STR10:       .string "complextest"
+DATAA:       .data -10, -5, 0, 5, 10
+DATAB:       .data 100, 200, 300

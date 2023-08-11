@@ -49,7 +49,6 @@ void build_image(FILE * source_file, plist instruction_image, plist data_image, 
         DEBUG_LINE(line, line_index);
         ptr_in_line = line;
         if(is_line_comment_or_blank(ptr_in_line)) {
-            printf("is comment");
             continue;
         }
         ptr_in_line = read_label(ptr_in_line, line_index, symbols_table, &sym, plist_get_length(instruction_image), &line_has_error);

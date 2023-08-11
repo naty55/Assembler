@@ -46,10 +46,16 @@ clean:
 	rm -f *.o
 
 clean-test:
-	rm -f ./tests/test*.obj ./tests/test*.am ./tests/test*.ent ./tests/test*.ext 
+	rm -f ./tests/**/*.am ./tests/**/*.ent ./tests/**/*.obj ./tests/**/*.ext
 
+test-ok:
+	./assembler tests/ok/test1 tests/ok/test2 tests/ok/test3 tests/ok/test4 tests/ok/test5 tests/ok/test6 tests/ok/test7 tests/ok/test8 tests/ok/test9 tests/ok/test10 tests/ok/test11 tests/ok/test12 tests/ok/test13 
+test-warn:
+	./assembler tests/warn/test1 tests/warn/test2 tests/warn/test3 tests/warn/test4 
+test-error:
+	./assembler tests/error/test1 tests/error/test2 tests/error/pre_assembler_error1 tests/error/pre_assembler_error2 tests/error/not_exist_file
 test: clean-test assembler
-	./assembler tests/test tests/test2 tests/test3 tests/test4 tests/test5 tests/test6 tests/test7 tests/test8 tests/pre_assembler_error tests/pre_assembler_error2
+	make test-ok test-warn test-error
 
 lines-count:
 	git ls-files | xargs wc -l
