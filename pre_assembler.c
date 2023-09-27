@@ -51,8 +51,7 @@ Bool remove_macros(FILE *input_file, FILE* source_file) {
     while(fgets(line, MAX_LINE_SIZE + 1, input_file) != NULL) {
         if(line[MAX_LINE_SIZE - 1] != 0) {
             ERROR("too long line", line_index);
-            ptable_free(macros_table, free);
-            clist_free(macro_name);
+            FREE_OBJECTS();
             return False;
         }
         ptr_in_line = skip_spaces(line);
@@ -63,8 +62,7 @@ Bool remove_macros(FILE *input_file, FILE* source_file) {
         
         if(strncmp(MACRO, ptr_in_line, 4) == 0) { /* Found macro declaration */
             if(!read_macro_name(ptr_in_line + 4, macro_name, &macro_content, macros_table, line_index)) {
-                ptable_free(macros_table, free);
-                clist_free(macro_name);
+                FREE_OBJECTS();
                 return False;
             }
             continue;
@@ -73,8 +71,7 @@ Bool remove_macros(FILE *input_file, FILE* source_file) {
         line_index++;  
     }
     
-    ptable_free(macros_table, (freeFunction)clist_free);
-    clist_free(macro_name);
+    FREE_OBJECTS();
     return True;
 }
 
