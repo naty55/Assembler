@@ -63,7 +63,7 @@ Bool write_ent(ptable entries, ptable symbols_table, char *filename) {
     return True;
 }
 Bool write_obj(plist inst_iamge, plist data_image, char *filename) {
-    char * obj_filename = concat(filename, ".obj");
+    char * obj_filename = concat(filename, ".ob");
     int i = 0;
     char data[2];
     FILE * obj_file = fopen(obj_filename, "w");

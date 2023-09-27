@@ -46,7 +46,7 @@ clean:
 	rm -f *.o
 
 clean-test:
-	rm -f ./tests/**/*.am ./tests/**/*.ent ./tests/**/*.obj ./tests/**/*.ext
+	rm -f ./tests/**/*.am ./tests/**/*.ent ./tests/**/*.ob ./tests/**/*.ext
 
 test-ok:
 	./assembler tests/ok/test1 tests/ok/test2 tests/ok/test3 tests/ok/test4 tests/ok/test5 tests/ok/test6 tests/ok/test7 tests/ok/test8 tests/ok/test9 tests/ok/test10 tests/ok/test11 tests/ok/test12 tests/ok/test13 
