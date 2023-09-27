@@ -1,4 +1,4 @@
-# assembler
+# Assembler
 ## Overview
 Few words on implemntation and code structure
 ### Data structures
@@ -11,14 +11,24 @@ Those data structures are as generic as possible in the limit of the course requ
 We have 2 main data types
 - `instruction_line` which holds the binary line data and has interface to handle it.
 - `symbol` which holds the data on labels in the assembling process.
-### Implemtation
+### Implementation
 We have couple of objects generated for every assembly file 
 - instruction_image (plist<instruction_line): The instructions image, this includes the IC from course guide.
 - data_image (plist<instruction_line>): The data image, this includes the DC image.
 - symbols_table (ptable<string, symbol>): The symbols table
 - missing_symbols (ptable <string, plist<instruction_line>): missing symbols keep track of the places where label was used, the `key` is the label, and the `value` is `plist` of all instruction lines that should be populated with the real address.
 - entries (ptable<string, Bool>): Keep track of entries - with this we assure no entry is printed twice to the `.ent` file, the bool value of `value` does not matter, as long as it's not NULL we consider the entry to exist.
-- externals (plist<string>): list of all externals, to print them later to the `.ext` file
+- externals (plist<string>): list of all externals, to print them later to the `.ext` file  
+---
+For every file
+#### Preassemble
+Remove macros and output `.am` file
+#### First pass 
+Read `.am` file and build the whole image except for the lines that should hold symbol address, keep track of those lines using `missing_symbols` object.
+#### Second pass 
+Fill the missing addresses in the lines, also validate all declared entries are declares
+#### Output 
+Output binary file, and `.ext`, `.ent` files
 
 ### Debugging logs and errors
 Thorugh the assemling process the assembler prints logs, for debugging we have `DEBUG_FLAG` in `error.h` logs ar epossible to contain code line index, which refer to the `.am` file.
@@ -29,7 +39,11 @@ run `make`
 ### Run 
 run `./assembler filename1 filename2 ...` without the filen extension (extension should be `.as`)
 ### Run tests
-after build run `make test` to run the assembler against all files in `./test` directory (including missing file to test against such errors)
+after build run `make test` to run the assembler against all files in `./test` directory (including missing file to test against such errors)  
+It's also possible to run specific type of test, 
+- `make test-ok` will run only tests without errors or warnnings
+- `make test-warn` will run otests with warnnings and without errors
+- `make test-ok` will run only tests with errors
 
 ## Decisions and behaviors that were not specified in the course guide
 1. Declaring twice or more label as external or entry will result warning only
